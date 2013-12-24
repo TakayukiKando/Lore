@@ -1,7 +1,7 @@
 Lore
 ====
 
-Lore langage parser.
+External domain specific languages for Tabletop Role Playing Game Rules and Scenarios. 
 
 Lore language's grammar definitions and samples for ANTLR parser.
 
