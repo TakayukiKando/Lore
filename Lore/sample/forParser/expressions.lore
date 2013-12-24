@@ -1,0 +1,51 @@
+desc("変数宣言"){[=[変数宣言構文のサンプル。
+パーサーのテスト用。
+]=]}
+
+import "types.lore":url;
+
+vInt0= 1;
+vInt1= 3*-2+1;
+vInt2=(vInt0+vInt1)%2;
+vInt3=Math.abs(vInt1);
+
+vFloat0=1.0;
+vFloat1=3.1415 * -2.E-5 + 1.0E10;
+vFloat2=(vFloat0+vFloat1)/2.0;
+vFloat3=Math.cos(1.0);
+
+range0_5=0,...,5;
+range_1_0_2_5=-1.0<...,2.5;
+range1_10=0,...<10;
+range1_0_2_5=-1.0E-6<...<3.0E10;
+range1_0_2_5=vInt0<...<vFloat3;
+
+bool_in_range0_5=vInt0.in(0,...,5);
+
+i=0;
+list0= {i+1, 1+1, 1*3, 4};
+list_access=list0.get(i+1);
+
+section expressions {
+	section sample {
+		struct_list_0= {{key="a"; value=1;},{key="b"; value=2;}};
+		struct_list_1= {{key="a"; value=1;}:Pair,{key="b"; value=2;}:Pair};
+	}
+}
+
+boole_key_a_length_positive = expressions.sample.struct_list_0(0).key.length > 0;
+
+dice0 = -3D6+2;
+dice1 = d6-2;
+dice2 = 4d8;
+dice3 = 4d;
+
+unit0 = 3[m]+(0.5*3)[km];
+unit1 = 9.8[m/s^2];
+
+input0 = integer.input(0);
+input1 = list<real>.input;
+input2 = range<integer>.input(0);
+input3 = Actor.input(0);
+input4 = unit[m].input(0);
+input5 = unit[m].input((1,...,12));

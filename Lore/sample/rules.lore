@@ -1,0 +1,227 @@
+docinfo{encoding="UTF-8", version="http://xgmtk.org/lore/1.0":url}
+desc("ルール・サンプル"){[=[ルール定義のサンプル。
+]=]}
+author("XGMTK.org"){"mailto:develop@xgmtk.org":url}
+author("椎路 ちひろ"){"mailto:develop@xgmtk.org":url, "chihiro@xmpp.xgmtk.org":jid}
+history("2013-07-15T00:00:00+09:00":date){reviser="椎路 ちひろ",desc="作成"}
+history("2013-11-05T00:00:00+09:00":date){reviser="椎路 ちひろ",desc="改訂"}
+history("2013-12-25T00:00:00+09:00":date){reviser="椎路 ちひろ",desc="改訂"}
+
+// 基本定義のインポート
+import "basics.xml":url;
+
+/* ルールの見本。 */
+section rules{
+	
+	/*
+	ゲーム内の基本的な時間単位であるラウンドの定義。
+	ここでは1Rを5分とします。
+	*/
+	[R]=5[min];
+	
+	/*
+	標準的な移動速度の定義。
+	*/
+	standard_velocity = 3[m/sec];
+	
+	/*
+	アクションの種類search / move / sleepを表す列挙型。String型のcaptionを値として持つ。
+	*/
+	enum Action{
+		search{caption="探す";}
+		move{caption="移動する";}
+		sleep{caption="寝る";}
+	}
+
+	/*
+	全てのエリアの基準となるルート・エリアの定義。
+	ルート・エリアとなるエリア定義の条件はlocationが"/"であることです。
+	ここでは名前なしのareaになっていますが、名前を付けても構いません。
+	ルート・エリアはimportした文書も含めシナリオ全体に一つだけ存在できます。
+	基本ルールのセクションで定義しておくのがよいでしょう。
+	
+	ジオメトリはXML形式で表現されます。ここではヒアドキュメントでXMLを直接書いた文字列をxml()に渡しています。
+	参照する場合は、xml(url("http://www.xgmtk.org/sample.xml"))のようにしてxml()にURLを渡します。
+	ルート・エリアのジオメトリはPointタイプ、スケールは1[km]を設定しています。
+	
+	ここでルート・エリアの環境には基準高度だけ設定。
+	ゲームシステムによっては気温や風向、風力といったデフォルトの環境設定をさらに追加します。
+	[m]と[km]はbasics.loreで既定義の単位です。
+	*/
+	root = {
+		location = "/":loc;
+		description = "ルート・エリア";
+		geometry = [=[
+<?xml version="1.0" encoding="UTF-8"?>
+<geometry xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.xgmtk.org/Lore/Point Point.xsd"
+	xmlns="http://www.xgmtk.org/Point"
+	scale="1[km]">
+	<point label="0" />
+</geometry>
+]=];
+		environment = {
+			height = 0.0[m];
+		}:Environment;
+	}: Area;
+	
+	/*
+	初期化処理。
+	すべてのキャラクタ（PCとNPC）に行動予定を尋ねる。
+	system.allPCはシナリオ中の全てのキャラクタのリスト。
+	forではリスト全ての要素に対する処理が並列的に行われ、全てが終わるのを待つ。
+	*/
+	rule initial{
+		system.allPC.foreach(@(actor : Actor){
+			select(actor){
+				as(pc : PC){
+					pc.choice;
+				}
+				default{
+					//Do nothing, ignore.
+				}
+			}
+		});
+	}
+
+	/* キャラクタを表現するデータ型の定義 */
+	form PC extends Actor{
+	
+		/* ユーザに次の行動を尋ねる関数。 */
+		rule choice{
+			// リストから選択して貰う
+			selected = self.query("どうしますか？", 
+				{
+					message = "行動を選択してください";
+					action = Action.input;
+				});
+			// ユーザの選択したアクションで場合分け。
+			select(selected.action){
+				case(Action.search){
+					self.searchAction;
+				}
+				case(Action.move){
+					self.moveAction;
+				}
+				default{
+					self.sleepAction;
+				}
+			}
+		}
+
+		/* 「探す」アクションの実現 */
+		rule searchAction{
+		
+			// キャラクタがアクションしたことをエリアに知らせてトリガをチェックさせる。
+			self.action(Action.search);
+			
+			/*
+			「探す」の1ラウンド後に再び予定を尋ねるためにイベント登録
+			scheduleはシステムで定義されている変数。
+			*/
+			self.futureChoice(1[R]);
+		}
+
+		/* 「寝る」アクションの実現。 */
+		rule sleepAction{
+			
+			/*
+			キャラクタに対して睡眠する時間を尋ねる。
+			キャラクタがPCの場合はプレイヤー、NPCの場合はGMの画面に問い合わせのダイアログを表示します。
+			1番目の引数はダイアログのタイトル、2番目の引数は問い合わせる値の形式です。
+			*/
+			period_hour=self.query("何時間寝ますか？",
+				{
+					message = "数字で時間を入力してください。";
+					hour = unit[hour].input;
+				}).hour.inputed;
+	
+			// ラウンド単位で時間を合わせるため所要時間をラウンド単位に切り上げます。
+			period = ceil(period_hour, 1[R]);
+			
+			// 睡眠終了後に再び予定を尋ねるためにイベント登録
+			self.futureChoice(period);
+		}
+
+		/* エリア内移動の実現。 */
+		rule moveAction{
+			// キャラクタが現在いるエリアの取得
+			area = self.currentArea;
+			
+			/*
+			プレイヤに対してキャラクタのいるエリアのマップを表示して目的地となる地点を選んでもらいます。
+			Areaのchoiceメソッドはユーザにマップを表示し1地点を選んでもらう目的で利用します。
+			目的地だけでなく経由地のリストを選んでもらうにはArea.choice()の代わりに
+			Area.choiceRoute()を使いまます。
+			*/
+			goal = area.choice(pc);
+			
+			/*
+			距離の計算
+			Areaのdistanceメソッドはマップデータを参照しつつ2点間移動する際の距離を計算します。
+			移動を考慮しない単純な最短距離を求めるにはshortestDistance()を使います。
+			*/
+			distance = area.distance(goal, pc.location);
+			
+			/*
+			距離と標準的な移動速度から所要時間を計算します。端数切り捨て。
+			単位の異なる計算のためまず両者を実数に変換して割り算後、整数に変換して最後に秒単位に変換します。
+			*/
+			period_sec = (distance.toReal / standard_velocity.toReal).toInt[sec];
+			
+			// ラウンド単位で時間を合わせるため所要時間をラウンド単位に切り上げます。
+			period = ceil(period_sec, 1[R]);
+			
+			// 指定された時間経過後に移動完了の処理をするためのイベントを登録します。
+			schedule.addEvent(schedule.current+delay, 0, moved, pc, goal);
+			
+			// 「移動」完了の1ラウンド後に再び予定を尋ねるためにイベント登録。
+			self.futureChoice(1[R]);
+			
+			/*
+			この例では簡単のため移動完了に対応するイベントのみ登録していますが、
+			遭遇戦などの処理のため必要があれば経由地に入るごとに処理を行うための
+			イベントを登録することもできます。
+			*/
+		}
+
+		/*
+		指定されたラウンド数経過後に再び予定を尋ねるためにイベント登録。
+		scheduleはシステムで定義されている変数。
+		*/
+		rule futureChoice(period : unit[R]){
+			schedule.add({
+				ticks = schedule.current+period;
+				priority = 0;
+				handler = @{
+					self.choice;
+				};
+			}:Event);
+		}
+		
+		/*
+		指定されたラウンド数経過後にキャラクタの位置を更新するためにイベント登録。
+		scheduleはシステムで定義されている変数。
+		*/
+		rule futureMove(period : unit[R], location : loc){
+			schedule.add({
+				ticks = schedule.current+period;
+				priority = 0;
+				handler = @{
+					self.moved(location);
+				};
+			}:Event);
+		}
+
+		/* 移動完了処理のための位置更新メソッド。 */
+		alter moved(goals : list<loc>){
+			/*
+			キャラクタの現在位置を設定します。
+			ここではルールの設計上、必ず１個しか位置情報が渡されないので単純にその１個を選んでいます。
+			並行に複数の移動要因が与えられ、その結果を合成できるようなシステムを設計することもできます。
+			例えば、風に流される帆船、移動中に横から体当たりされるキャラクタなど。
+			*/
+			self.location := goals.get1st;
+		}
+	}
+}//Section rulesの終わり

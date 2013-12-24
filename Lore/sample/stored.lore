@@ -1,0 +1,49 @@
+docinfo{encoding="UTF-8",version="http://xgmtk.org/lore/1.0":url}
+desc("[saved session]サンプル・シナリオ"){"Lore言語のサンプルコード、シナリオの記述例"}
+author("椎路 ちひろ"){"Chihiro_Shiiji@xmpp.xgmtk.org":jid, "mail:develop@xgmtk.org":url}
+history("2013-07-15T00:00:00+09:00":date){reviser="椎路 ちひろ",desc="作成"}
+history("2013-11-05T00:00:00+09:00":date){reviser="椎路 ちひろ",desc="改訂"}
+history("2013-12-22T00:00:00+09:00":date){reviser="椎路 ちひろ",desc="改訂"}
+
+// シナリオのインポート
+import "scenarioSample.xml":url;
+
+/*
+シナリオ自身を書き変えずimportして、追加分をこのファイルに保存する。
+*/
+
+/*
+シナリオ開始後に保存されるファイルには_auto_storedセクションが作られ、
+シナリオ進行中に増えたオブジェクトが記録される。
+この部分のフォーマットは暫定的な物で、開発が進むにつれて変わるであろう。
+*/
+section _auto_stored {
+	/*
+	典型的にはセッション内の現在時刻及び、イベント・オブジェクトが以下の形式で保管される。
+	*/
+	schedule = {
+		ticks = 86400;//シナリオ開始からゲーム時間で1日後
+		priority = 0;
+	
+		events={
+			{//登録されたイベントの例
+				ticks = 86700;//シナリオ開始からゲーム時間で1日+1R(5分）後
+				priority = 0;
+				handler = @{
+					scenario.pc.moved("/region/dungeon[1,2]":loc);
+				};
+			}:Event,
+			{//登録されたイベントの例
+				ticks = 87000;//シナリオ開始からゲーム時間で1日+2R(5分）後
+				priority = 0;
+				handler = @{
+					scenario.pc.choice;
+				};
+			}:Event
+			/*
+			発行されたイベントが処理済も含めて全て記録されるので実際はもっと多いが、
+			これはサンプルなので省略。
+			*/
+		};
+	}:Schedule;
+}

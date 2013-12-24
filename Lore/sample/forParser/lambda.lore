@@ -1,0 +1,17 @@
+desc("関数値"){[=[関数値のサンプル。
+パーサーのテスト用。
+]=]}
+
+import "types.lore":url;
+
+[enc]=1.0;
+
+form ItemSet{
+	items : list<Item>;
+	encCalc : @<(list<Item>): unit[enc]>;
+	enc : unit[enc]{result = encCalc(items);}
+
+	find (name : string):Item{
+		items.find1st(@(it : Item):boolean{result = it.name == name;});
+	}
+}

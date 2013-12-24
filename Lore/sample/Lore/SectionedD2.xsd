@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/Lore/SectionedD2" xmlns:sd2="http://www.example.org/Lore/SectionedD2" elementFormDefault="qualified" xmlns:lore="http://www.xgmtk.org/Lore" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+	<import schemaLocation="../Lore.xsd" namespace="http://www.xgmtk.org/Lore"></import>
+
+	<element name="geometry" type="sd2:Geometry"></element>
+
+	<complexType name="Geometry">
+		<sequence>
+			<element name="description" type="lore:Document" maxOccurs="1" minOccurs="0"></element>
+			<element name="terrains" type="lore:Enum" maxOccurs="1"
+				minOccurs="1">
+			</element>
+			<group ref="sd2:VisualSpec" maxOccurs="1" minOccurs="0"></group>
+			<element ref="sd2:line" maxOccurs="unbounded"
+				minOccurs="1">
+			</element>
+		</sequence>
+		<attribute name="type" type="sd2:GeometryType"></attribute>
+	</complexType>
+
+	<group name="VisualSpec">
+			<choice>
+				<element name="visual" type="sd2:Visual" maxOccurs="1" minOccurs="1"></element>
+				<element name="tile" type="sd2:Tile" maxOccurs="unbounded" minOccurs="1"></element>
+			</choice>
+	</group>
+
+	<complexType name="Visual">
+		<attribute name="src" type="anyURI"></attribute>
+	</complexType>
+	
+    <complexType name="Tile">
+    	<complexContent>
+    		<extension base="lore:Empty">
+    			<attribute name="terrain" type="lore:Identifier"></attribute>
+
+    			<attribute name="src" type="anyURI"></attribute>
+
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+    <element name="section" type="sd2:Section"></element>
+
+    <element name="line" type="sd2:Line"></element>
+    
+    <complexType name="Line">
+    	<sequence>
+    		<element ref="sd2:section" maxOccurs="unbounded" minOccurs="0"></element>
+    	</sequence>
+    	<attribute name="ystart" type="int"></attribute>
+    </complexType>
+
+    <complexType name="Section">
+    	<complexContent>
+    		<extension base="lore:Empty">
+    			<attribute name="terrain" type="lore:Identifier" use="required"></attribute>
+    			<attribute name="height" type="lore:NumberWithUnit"></attribute>
+    			<attribute name="prohibited" type="boolean"></attribute>
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+    <simpleType name="GeometryType">
+    	<restriction base="int">
+    		<enumeration value="4"></enumeration>
+    		<enumeration value="6"></enumeration>
+    		<enumeration value="8"></enumeration>
+    	</restriction>
+    </simpleType>
+</schema>

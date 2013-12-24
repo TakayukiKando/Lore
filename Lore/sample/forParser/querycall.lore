@@ -1,0 +1,39 @@
+desc("関数呼び出し"){[=[関数呼び出しの結果を格納する変数宣言構文のサンプル。
+パーサーのテスト用。
+]=]}
+
+import "types.lore":url;
+
+period_hour0 = query("何時間寝ますか？");
+message0 = {
+		message = "数字で時間を入力してください。";
+	};
+
+hour = unit[hour].input((1,...,12));
+
+message0 = {
+		message = "数字で時間を入力してください。";
+		hour = 1.0;
+	};
+
+message1 = {
+		message = "数字で時間を入力してください。";
+		hour = unit[hour].input((1,...,12));
+	};
+
+period_hour1 = query({
+		message = "数字で時間を入力してください。";
+		hour = unit[hour].input((1,...,12));
+	});
+
+period_hour2 = query("何時間寝ますか？",
+			{
+				message = "数字で時間を入力してください。";
+				hour = unit[hour].input((1,...,12));
+			}).hour;
+
+period_hour3 = pc.query("何時間寝ますか？",
+			{
+				message = "数字で時間を入力してください。";
+				hour = unit[hour].input((1,...,12));
+			}).hour;

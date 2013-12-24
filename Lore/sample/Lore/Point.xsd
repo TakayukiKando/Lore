@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/Lore/Point" xmlns:pnt="http://www.example.org/Lore/Point" elementFormDefault="qualified" xmlns:lore="http://www.xgmtk.org/Lore" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+	<import schemaLocation="../Lore.xsd" namespace="http://www.xgmtk.org/Lore"></import>
+
+	<element name="geometry" type="pnt:Geometry"></element>
+
+	<complexType name="Geometry">
+		<sequence>
+			<element name="description" type="lore:Document"
+				maxOccurs="1" minOccurs="0">
+			</element>
+			<element name="point" maxOccurs="1" minOccurs="1">
+				<complexType>
+					<complexContent>
+						<extension base="lore:Empty">
+							<attribute name="label" use="required" fixed="0">
+								<simpleType>
+									<restriction base="int">
+										<enumeration value="0"></enumeration>
+									</restriction>
+								</simpleType>
+							</attribute>
+						</extension>
+					</complexContent>
+				</complexType></element>
+		</sequence>
+	</complexType>
+</schema>

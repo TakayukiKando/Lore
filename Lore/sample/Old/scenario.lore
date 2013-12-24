@@ -1,0 +1,170 @@
+#encoding "UTF-8"
+#version "http://xgmtk.org/lore/1.0"
+#title "シナリオ・サンプル"
+#author(address="Chihiro_Shiiji@xmpp.xgmtk.org") "椎路 ちひろ"
+#history(date="2013-07-15T00:00:00+09:00", modifier="Chihiro_Shiiji@xmpp.xgmtk.org") "作成"
+
+// ルール定義のインポート
+#import "rules.xml"
+
+/* シナリオの見本。 */
+Section scenario{
+
+	/* 初期化イベント。 */
+	Event{
+		ticks="0";
+		priority="0";
+		
+		/* 初期化処理。 */
+		Handler init{
+			/*
+			すべてのキャラクタ（PCとNPC）に行動予定を尋ねる。
+			system.allPCはシナリオ中の全てのキャラクタのリスト。
+			forではリスト全ての要素に対する処理が並列的に行われ、全てが終わるのを待つ。
+			*/
+			for(pc : system.allPC){
+				choice(pc);
+			}
+		}
+	}
+
+	/*
+	基点となるエリアに「とある地方」を設定。
+	この「とある地方」にはたった２つしか地点がない。
+	
+	ジオメトリはXML形式で表現されます。
+	別のXMLファイルを参照することもできますが、ここではヒアドキュメントでXMLを直接書いて文字列としてxml()に渡しています。
+	別ファイルを参照する場合は、XML(URL("http://www.xgmtk.org/sample.xml"))のようにしてXML()にURLを渡します。
+	
+	このエリアのジオメトリはLinkedタイプ、スケールは1[km]を設定しています。
+	*/
+	Area region{
+		location="/[0]";
+		description="とある地域";
+		geometry=XML(<<<END_XML
+<?xml version="1.0" encoding="UTF-8"?>
+<geometry xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.xgmtk.org/Lore/Linked Linked.xsd"
+	xmlns="http://www.xgmtk.org/Linked"
+	scale="1[km]">
+	<node label="start_point">
+		<description>
+			<plain>スタート地点</plain>
+		</description>
+		<link to="dungeon" distance="4"></link>
+	</node>
+	<node label="dungeon">
+		<description>
+			<plain>ミニマムダンジョン所在地</plain>
+		</description>
+		<link to="start_point" distance="4"></link>
+	</node>
+</geometry>
+END_XML
+		);
+	}
+
+	/*
+	「とある地方」のとある場所（dungeon）に５×５の升目に区切られたダンジョンを設置。
+	この例ではジオメトリ・データは別ファイルになっています。
+	高さが-5[m]に設定されているので基準高度から地下へ5メートルにあることになります。
+	*/
+	Area dungeon{
+		location="/region[dungeon]";
+		geometry=XML(URL("dungeon.xml"));
+		environment = {
+			height = -5[m];
+		};
+	}
+
+		プレイヤー・キャラクターを「とある地方」の旅立ちの場に配置。
+		<actor actorId="Chihiro" location="/region[start_point]">
+			<features />
+			<items />
+		</actor>
+
+	/*
+	所有者未定の宝箱は「とあるミニマムなダンジョン」の「祭壇」の位置に…。
+	secretsのhideに秘密情報が設定されているのでkeyとなる情報を入手していないキャラには見えません。
+	*/
+	Item chest{
+		location = Location("/region/dungeon[1,2]");
+		secrets = {
+			Secret{
+					key = "secret0";
+					mode = SecretMode.hide;
+			}
+		};
+	}
+
+	/*
+	「とある地方」から「とあるミニマムなダンジョン」へエリア間移動のためのトリガ。
+	ダンジョンの地点で「探す」をすると次のラウンドにダンジョンに入ります。
+	*/
+	Trigger{
+		location=Location("/region[dungeon]");
+		actions={Action.search};
+		
+		/*
+		ダンジョンに入るためのイベントのハンドラ
+		*/
+		Handler triggered(Actor pc){
+			// 指定された時間経過後に移動完了の処理をするためのイベントを登録します。
+			schedule.addEvent(schedule.current+1[R], 0, moved, pc, location("/region/dungeon[1,4]"));
+			
+			// 「移動」完了後に再び予定を尋ねるためにイベント登録。
+			schedule.addEvent(schedule.current+1[R], 1, choice, pc);
+		}
+	}
+
+	/*
+	「とあるミニマムなダンジョン」から「とある地方」からへエリア間移動のためのトリガ。
+	ダンジョンの出口の地点で「探す」をすると次のラウンドにダンジョンから「とある地方」に戻ります。
+	*/
+	Trigger{
+		location=Location("/region/dungeon[1,4]");
+		actions={Action.search};
+		
+		/*
+		ダンジョンを出るためのイベントのハンドラ
+		*/
+		Handler triggered(Actor pc){
+			// 指定された時間経過後に移動完了の処理をするためのイベントを登録します。
+			schedule.addEvent(schedule.current+1[R], 0, moved, pc, location("/region[dungeon]"));
+			
+			// 「移動」完了後に再び予定を尋ねるためにイベント登録。
+			schedule.addEvent(schedule.current+1[R], 1, choice, pc);
+		}
+	}
+
+	/*
+	宝箱発見メッセージの表示のためのトリガ。
+	祭壇の位置で「探す」をすると発動します。
+	*/
+	Trigger{
+		location=Location("/region/dungeon[1,2]");
+		actions={Action.search};
+		
+		/*
+		宝物発見のトリガのハンドラ。
+		秘密情報をキャラへ渡すことでたからばこを見えるようにするとともにメッセージを表示します。
+		*/
+		Handler triggered(Actor pc){
+			// チェストに設定されている秘密情報をキャラに受け渡す
+			pc.addKnownSecret(chest.secrets.hide)
+			pc.message(HTML(<<<END_HTML
+<!-- ここではhtmlテキストをメッセージとして送ってみました。 大きな文字と宝箱のイメージがチャット画面に表示されます。 -->
+<html>
+	<body>
+		<p>
+			<big>宝物が見つかりました！</big>
+			<img src="TresureChest.jpg" alt="（宝箱のイメージ）" />
+		</p>
+	</body>
+</html>
+END_HTML
+			}
+		}
+	}
+	
+}//Section scenarioの終わり

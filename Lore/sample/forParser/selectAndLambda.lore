@@ -1,0 +1,29 @@
+desc("分岐とラムダ"){[=[分岐とラムダの組み合わせのサンプル。
+パーサーのテスト用。
+]=]}
+
+import "types.lore":url;
+
+rule notifyGM(item : Item){
+	GM.message(x);
+}
+
+rule selection(items : list<Item>, owners : list<Actor>){
+	owners.forEach(@(owner : Actor, index : integer){
+		select(items.get(index)){
+			as (x : Dagger){
+				owner.message(x.type.name);
+				notifyGM(x);
+				owner.equip(x);
+			}
+			as (x : Claymore){
+				owner.message(x.type.name);
+				owner.equip(x);
+			}
+			default {
+				owner.message("unknown");
+			}
+		}
+	});
+}
+

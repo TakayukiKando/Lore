@@ -1,0 +1,73 @@
+desc("分岐"){[=[分岐のサンプル。
+パーサーのテスト用。
+]=]}
+
+import "types.lore":url;
+
+[enc]=1.0;
+
+enum Hands { _1H; _2H; Sheild;}
+
+function selection(items: list<Item>, name: string): Hands{
+	result = select(items.get(0).name){
+		case ("dagger"){
+			result = Hands._1H;
+		}
+		case ("claymore"){
+			result = Hands._2H;
+		}
+		default {
+			result = Hands.Sheild;
+		}
+	};
+}
+
+rule selection(owner : Actor, items: list<Item>, name: string){
+	select(items.get(0).name){
+		case ("dagger"){
+			owner.message(Hands._1H);
+		}
+		case ("claymore"){
+			owner.message(Hands._2H);
+		}
+		default {
+			owner.message(Hands.Sheild);
+		}
+	}
+}
+
+form SampleActor extends Actor{
+	items: list<Item>;
+
+	get0Name : string{
+		result = select(items.get(0)){
+			as (x : Dagger){
+				result = x.type.name;
+			}
+			as (x : Claymore){
+				result = x.type.name;
+			}
+			default {
+				result = "unknown";
+			}
+		};
+	}
+
+	alter selection(owners : list<Actor>){
+		owners.forEach(@(owner : Actor, index : integer){
+			select(items.get(index)){
+				as (x : Dagger){
+					owner.message(x.type.name);
+					ownersequip(x);
+				}
+				as (x : Claymore){
+					owner.message(x.type.name);
+					owner.equip(x);
+				}
+				default {
+					owner.message("unknown");
+				}
+			}
+		});
+	}
+}

@@ -1,0 +1,55 @@
+desc("関数呼び出し"){[=[関数呼び出しの結果を格納する変数宣言構文のサンプル。
+パーサーのテスト用。
+]=]}
+
+import "types":url;
+
+period_hour0 = query("何時間寝ますか？");
+period_hour1 = query({
+		message = "数字で時間を入力してください。";
+		hour = unit[hour].input((1,...,12));
+	});
+period_hour2 = query("何時間寝ますか？",
+			{
+				message = "数字で時間を入力してください。";
+				hour = unit[hour].input((1,...,12));
+			}).hour;
+
+period_hour3 = pc.query("何時間寝ますか？",
+			{
+				message = "数字で時間を入力してください。";
+				hour = unit[hour].input((1,...,12));
+			}).hour;
+
+struct_0= fun({key="a"; value=1;},{key="b"; value=2;});
+struct_1= A.fun({key="a"; value=1;}:T,{key="b"; value=2;}:T);
+struct_list_0= fun({{key="a"; value=1;},{key="b"; value=2;}});
+struct_list_1= A.fun({{key="a"; value=1;},{key="b"; value=2;}});
+
+vInt0= A.fun(1);
+vInt1= fun(3*-2+1);
+vInt2= A.fun((vInt0+vInt1)%2);
+vInt3= fun(Math.abs(vInt1));
+vInt3= A.fun(Math.abs(vInt1));
+
+vFloat0=fun(1.0);
+vFloat1=fun(3.1415 * -2.E-5 + 1.0E10, vFloat0+vFloat3)/2.0;
+vFloat3=Math.cos(1.0);
+
+range0_5=fun((0,...,5));
+range_1_0_2_5=fun((-1.0<...,2.5));
+range1_10=fun((0,...<10),(-1.0E-6<...<3.0E10),(vInt0<...<vFloat3));
+
+bool_in_range0_5=A.fun(vInt0.in(0,...,5));
+
+i=0;
+list0= fun({i+1, 1+1, 1*3, 4});
+list0= A.fun({i+1, 1+1, 1*3, 4});
+list_access=list0.get(i+1);
+
+boole_key_a_length_positive = fun(expressions.sample.struct_list_0(0).key.length > 0);
+
+dice0 = fun(-3D6+2, d6-2);
+dice2 = A.fun(4d8, 4d);
+
+unit0 = fun(3[m]+(0.5*3)[km], 9.8[m/s^2]);

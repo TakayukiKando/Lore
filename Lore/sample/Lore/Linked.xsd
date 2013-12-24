@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.example.org/Linked"
+	xmlns:lnkd="http://www.example.org/Linked"
+	elementFormDefault="qualified" xmlns:lore="http://www.xgmtk.org/Lore" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+	<import schemaLocation="../Lore.xsd" namespace="http://www.xgmtk.org/Lore"></import>
+	<element name="node" type="lnkd:Node"></element>
+
+	<element name="geometry" type="lnkd:Geometry"></element>
+
+	<complexType name="Geometry">
+		<sequence>
+            <element name="description" type="lore:Document" maxOccurs="1" minOccurs="0"></element>
+            <element ref="lnkd:node" maxOccurs="unbounded" minOccurs="1"></element>
+		</sequence>
+	</complexType>
+
+	<complexType name="Node">
+		<sequence>
+			<element name="description" type="lore:Document" maxOccurs="1" minOccurs="1"></element>
+			<element ref="lnkd:link" maxOccurs="unbounded"
+				minOccurs="0">
+			</element>
+		</sequence>
+		<attribute name="label" type="lore:Identifier" use="required"></attribute>
+	</complexType>
+
+	<element name="link" type="lnkd:Link"></element>
+
+	<complexType name="Link">
+		<sequence>
+			<element name="description" type="lore:Document"
+				maxOccurs="1" minOccurs="0">
+			</element>
+		</sequence>
+		<attribute name="label" type="lore:Identifier" use="required"></attribute>
+		<attribute name="to" type="lore:Identifier"></attribute>
+		<attribute name="distance" type="lore:NumberWithUnit"></attribute>
+	</complexType>
+</schema>

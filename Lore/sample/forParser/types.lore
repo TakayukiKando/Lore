@@ -1,0 +1,104 @@
+desc("型宣言"){[=[型宣言構文のサンプル。
+パーサーのテスト用。
+]=]}
+
+section types {
+	[m]=1.0;
+	[km]=1000[m];
+	[m/s^2]=1.0;
+
+	enum Action{
+		search{caption="探す";}
+		move{caption="移動する";}
+		sleep{caption="寝る";}
+	}
+
+	function mean(elements : list<? extends number>): real{
+		total = elements.sum;
+		result = total / elements.length;
+	}
+
+	rule sleepAction(pc : Actor){
+		period_hour=pc.query("何時間寝ますか？",
+			{
+				message = "数字で時間を入力してください。";
+				hour = unit [hour].input((1,...,12));
+			}).hour;
+			
+		period = ceil(period_hour, 1[R]);
+		
+		schedule.add({
+			ticks=schedule.current+period;
+			priority=0;
+			
+			rule handle{
+				pc.choice;
+			}
+		}:Event);
+	}
+
+	form HP{
+		current : integer;
+		hp_range : range<integer>;
+
+		live : boolean{
+			result = !hp_range.match(current);
+		}
+
+		alter damage(damages : list<integer>){
+			current = current - damages.sum;
+		} 
+	}
+
+	form SampleActor extends Actor{
+		location = "/[0]":loc;
+		mobility = 3.0[m/R];
+		image = "no_image.jpg":url;
+		description : url;
+		hp : HP;
+		items : list<Item>;
+
+		enum MobilityMode{
+			run{factor=2.0;}
+			walk{factor=1.0;}
+			crawl{factor=0.5;}
+		}
+
+		speed(mode : MobilityMode) : unit[m/s]{
+			result = mobility * mode.factor;
+		}
+	}
+
+	private rule addItem(pc : SampleActor, item : Item){
+		pc.items.add(item);
+	}
+
+	form Sample {
+		private constant cstr = "constant string";
+		private form Inner{
+			link : Sample;
+			linkInner : Inner;
+		}
+		private inner : Inner;
+
+		anyonimous = {
+			key = "sample";
+			value = 1.0;
+		};
+		
+		explicit : anyonimous.type;
+		
+		anyonimouses = {
+			{
+				key = "sample1";
+				value = 1.0;
+			},
+			{
+				key = "sample2";
+				value = 2.0;
+			}
+		};
+		
+		explicits : list<anyonimous.type>;
+	}
+}
