@@ -11,7 +11,7 @@ import org.xgmtk.lore.ast.AST;
 import org.xgmtk.lore.ast.ASTBuilder;
 
 /**
- * Use Aantlr-4.1-complete.jar
+ * Use antlr-4.1-complete.jar
  * 
  * @author kando
  *
