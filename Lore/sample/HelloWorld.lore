@@ -2,21 +2,23 @@ docinfo{encoding="UTF-8", version="http://xgmtk.org/lore/1.0":url}
 desc("Hello World"){"Hello Worldを表示するだけのサンプル"}
 author("椎路 ちひろ"){"mailto:develop@xgmtk.org":url}
 
-/*
-開始直後（時刻0）にinitという名前のハンドラを呼び出すためのイベントです。
-実行可能なシナリオには最低一つのイベントが必要です。
-*/
-first = {
-	ticks = 0;
-	priority = 0;
-	handler=@{main;};
-}:Event;
-
-/*
-上記のイベントから呼び出されるハンドラです。
-GMのチャット・ウィンドウに"Hello world!"が表示されます。
-*/
-rule main{
-	// GMに向けてメッセージを送信します。
-	GM.message("Hello world!");
+section hello{
+	/*
+	開始直後（時刻0）にinitという名前のハンドラを呼び出すためのイベントです。
+	実行可能なシナリオには最低一つのイベントが必要です。
+	*/
+	first = {
+		ticks = 0;
+		priority = 0;
+		handler=@{main;};
+	}:Event;
+	
+	/*
+	上記のイベントから呼び出されるハンドラです。
+	GMのチャット・ウィンドウに"Hello world!"が表示されます。
+	*/
+	rule main{
+		// GMに向けてメッセージを送信します。
+		GM.message("Hello world!");
+	}
 }
