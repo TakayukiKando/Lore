@@ -161,7 +161,7 @@ section scenario{
 		</p>
 	</body>
 </html>
-]=]);
+]=]:html);
 		};
 	}:Trigger;
 	
