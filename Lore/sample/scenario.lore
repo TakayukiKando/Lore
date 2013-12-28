@@ -82,11 +82,12 @@ section scenario{
 
 		プレイヤー・キャラクターを「とある地方」の旅立ちの場に配置。
 	pc = {
-			name="Chihiro";
-			player="Chihiro_Shiiji@xmpp.xgmtk.org":jid;
-			location="/region[start_point]":loc;
-			features=list<Featur>.empty;
-			items=list<Item>.empty;
+		name="Chihiro";
+		player="Chihiro_Shiiji@xmpp.xgmtk.org":jid;
+		location="/region[start_point]":loc;
+		features=list<Featur>.empty;
+		items=list<Item>.empty;
+		knownSecrets=list<string>.empty;
 		}:PC;
 
 	/*
@@ -95,10 +96,11 @@ section scenario{
 	*/
 	chest = {
 		location = "/region/dungeon[1,2]":loc;
+		features=list<Featur>.empty;
 		secrets = {
 			{
 					key = "secret0";
-					mode = rules.SecretMode.hide;
+					mode = Secret.Mode.hide;
 			}:Secret
 		};
 	}:Item;
@@ -109,6 +111,7 @@ section scenario{
 	*/
 	dungeonEntrance = {
 		location="/region[dungeon]":loc;
+		effectiveRange = 0[km],...<1[km];
 		actions={Action.search};
 		
 		/*
@@ -129,6 +132,7 @@ section scenario{
 	*/
 	dungeonExit = {
 		location="/region/dungeon[1,4]":loc;
+		effectiveRange=0[m],...<5[m];
 		actions={Action.search};
 		
 		/*
@@ -149,6 +153,7 @@ section scenario{
 	*/
 	chestFound = {
 		location="/region/dungeon[1,2]":loc;
+		effectiveRange=0[m],...<5[m];
 		actions={Action.search};
 		
 		/*
