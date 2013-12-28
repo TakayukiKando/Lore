@@ -19,6 +19,8 @@ range_1_0_2_5=-1.0<...,2.5;
 range1_10=0,...<10;
 range1_0_2_5=-1.0E-6<...<3.0E10;
 range1_0_2_5=vInt0<...<vFloat3;
+unit0=0[km];
+range0=0[km],...,1[km];
 
 bool_in_range0_5=vInt0.in(0,...,5);
 
