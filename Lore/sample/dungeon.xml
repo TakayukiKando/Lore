@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <geometry xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.xgmtk.org/Lore/Linked Linked.xsd"
+	xsi:schemaLocation="http://www.xgmtk.org/Lore/Sectioned2D Sectioned2D.xsd"
 	xmlns="http://www.xgmtk.org/Lore/Sectioned2D"
 	scale="5[m]" type="4">
 	<description>
