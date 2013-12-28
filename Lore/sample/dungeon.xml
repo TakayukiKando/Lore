@@ -3,14 +3,6 @@
 	xsi:schemaLocation="http://www.xgmtk.org/Lore/Sectioned2D Sectioned2D.xsd"
 	xmlns="http://www.xgmtk.org/Lore/Sectioned2D"
 	scale="5[m]" type="4">
-	<description>
-		<plain>Sectioned2D型ジオメトリ(スクエア、5×5)のエリア。
-		ダンジョンには入口（座標[4,2]）と祭壇（座標[1,2]）がある。
-		祭壇の升目だけは30cmほど周囲より高い。
-		スケールは5mとするので升目の1辺が5mとなります。
-		directionに30を指定したので時計回りに30度回転されています。
-		</plain>
-	</description>
 	<terrains>
 		<element name="floor" />
 		<element name="wall" />
