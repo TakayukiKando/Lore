@@ -6,7 +6,7 @@ history("2013-11-05T00:00:00+09:00":date){reviser="椎路 ちひろ",desc="改�
 history("2013-12-22T00:00:00+09:00":date){reviser="椎路 ちひろ",desc="改訂"}
 
 // ルール定義のインポート
-import "rules.xml":url;
+import "rules.lore":url;
 
 /* シナリオの見本。 */
 section scenario{
@@ -35,6 +35,7 @@ section scenario{
 	region = {
 		location = "/[0]":loc;
 		description = "とある地域";
+		environment = Environment.inherited;
 		geometry = [=[
 <?xml version="1.0" encoding="UTF-8"?>
 <geometry xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -61,12 +62,16 @@ section scenario{
 	「とある地方」のとある場所（dungeon）に５×５の升目に区切られたダンジョンを設置。
 	この例ではジオメトリ・データは別ファイルになっています。
 	高さが-5[m]に設定されているので基準高度から地下へ5メートルにあることになります。
+	通常はジオメトリで記述されるマップは上が北ですが、
+	この例ではenvironmentメンバのrotationメンバ（向き）に
+	30度を指定したので上空から見て時計回りに30度回転されています。
 	*/
 	dungeon = {
 		location = "/region[dungeon]":loc;
 		geometry = ("dungeon.xml":url).loadXML;
 		environment = {
 			height = -5[m];
+			rotation = 30[degree];
 		}:Environment;
 	}:Area;
 

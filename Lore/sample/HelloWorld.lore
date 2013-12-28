@@ -2,9 +2,9 @@ docinfo{encoding="UTF-8", version="http://xgmtk.org/lore/1.0":url}
 desc("Hello World"){"Hello Worldを表示するだけのサンプル"}
 author("椎路 ちひろ"){"mailto:develop@xgmtk.org":url}
 
-section hello{
+section hello.world{
 	/*
-	開始直後（時刻0）にinitという名前のハンドラを呼び出すためのイベントです。
+	開始直後（時刻0）にmainという名前のハンドラを呼び出すためのイベントです。
 	実行可能なシナリオには最低一つのイベントが必要です。
 	*/
 	first = {
@@ -14,7 +14,7 @@ section hello{
 	}:Event;
 	
 	/*
-	上記のイベントから呼び出されるハンドラです。
+	上記のイベントから呼び出されるハンドラ・ルールです。
 	GMのチャット・ウィンドウに"Hello world!"が表示されます。
 	*/
 	rule main{
