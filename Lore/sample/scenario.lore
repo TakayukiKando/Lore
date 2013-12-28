@@ -69,6 +69,11 @@ section scenario{
 	dungeon = {
 		location = "/region[dungeon]":loc;
 		geometry = ("dungeon.xml":url).loadXML;
+				description = [=[Sectioned2D型ジオメトリ(スクエア、5×5)のエリア。
+ダンジョンには入口（座標[4,2]）と祭壇（座標[1,2]）がある。
+祭壇の升目だけは30cmほど周囲より高い。
+スケールは5mとするので升目の1辺が5mとなります。
+]=];
 		environment = {
 			height = -5[m];
 			rotation = 30[degree];
