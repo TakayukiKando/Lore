@@ -112,14 +112,14 @@ section rules{
 			キャラクタがPCの場合はプレイヤー、NPCの場合はGMの画面に問い合わせのダイアログを表示します。
 			1番目の引数はダイアログのタイトル、2番目の引数は問い合わせる値の形式です。
 			*/
-			period_hour=self.query("何時間寝ますか？",
+			period=self.query("何時間寝ますか？",
 				{
 					message = "数字で時間を入力してください。";
 					hour = unit[hour].input;
-				}).hour.inputed;
+				});
 	
 			// ラウンド単位で時間を合わせるため所要時間をラウンド単位に切り上げます。
-			period = ceil(period_hour, 1[R]);
+			period = ceil(period.hour, 1[R]);
 			
 			// 睡眠終了後に再び予定を尋ねるためにイベント登録
 			self.futureChoice(period);
