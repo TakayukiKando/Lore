@@ -2,6 +2,7 @@ docinfo{encoding="UTF-8", version="http://xgmtk.org/lore/1.0":url}
 desc("Hello World"){"Hello Worldを表示するだけのサンプル"}
 author("椎路 ちひろ"){"mailto:develop@xgmtk.org":url}
 
+// 基本型のインポート
 import "basic.lore":url;
 
 section hello.world{

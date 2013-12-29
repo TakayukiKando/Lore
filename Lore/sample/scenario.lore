@@ -119,14 +119,12 @@ section scenario{
 		/*
 		ダンジョンに入るためのイベントのハンドラ
 		*/
-		handler = @(pc : PC){
+		pcHandler = @(pc : PC){
 			// 指定された時間経過後に移動完了の処理をするためのイベントを登録します。
 			pc.futureMove(1[R], "/region/dungeon[1,4]":loc);
-			
-			// 「移動」完了後に再び予定を尋ねるためにイベント登録。
-			pc.futureChoice(1[R]);
+			pc.message("ダンジョンに入ります。");
 		};
-	}:Trigger;
+	}:PCTrigger;
 
 	/*
 	「とあるミニマムなダンジョン」から「とある地方」からへエリア間移動のためのトリガ。
@@ -140,14 +138,19 @@ section scenario{
 		/*
 		ダンジョンを出るためのイベントのハンドラ
 		*/
-		handler = @(pc : PC){
+		pcHandler = @(pc : PC){
 			// 指定された時間経過後に移動完了の処理をするためのイベントを登録します。
-			pc.futureMove(1[R], "/region[dungeon]":loc);
-			
-			// 「移動」完了後に再び予定を尋ねるためにイベント登録。
-			pc.futureChoice(1[R]);
+			select(actor){
+				as(pc : PC){
+					pc.futureMove(1[R], "/region[dungeon]":loc);
+				}
+				default{
+					//Do nothing, ignore.
+				}
+			}
+			actor.message("ダンジョンから出ます。");
 		};
-	}:Trigger;
+	}:PCTrigger;
 
 	/*
 	宝箱発見メッセージの表示のためのトリガ。
@@ -162,9 +165,9 @@ section scenario{
 		宝物発見のトリガのハンドラ。
 		秘密情報をキャラへ渡すことでたからばこを見えるようにするとともにメッセージを表示します。
 		*/
-		handler = @(pc : PC){
+		pcHandler = @(pc : PC){
 			// チェストに設定されている秘密情報をキャラに受け渡す
-			pc.addKnownSecret(chest.secrets.hide);
+			pc.addKnownSecret(chest.secrets.get(0).key);
 			/*
 			ここではhtmlテキストをメッセージとして送ってみました。 
 			大きな文字と宝箱のイメージがチャット画面に表示されます。 
@@ -180,6 +183,6 @@ section scenario{
 </html>
 ]=]:html);
 		};
-	}:Trigger;
+	}:PCTrigger;
 	
 }//Section scenarioの終わり

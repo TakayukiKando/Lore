@@ -22,7 +22,7 @@ section rules{
 	/*
 	標準的な移動速度の定義。
 	*/
-	standard_velocity = 3[m/sec];
+	standard_velocity = 1.6[m/sec];
 	
 	/*
 	アクションの種類search / move / sleepを表す列挙型。String型のcaptionを値として持つ。
@@ -51,38 +51,20 @@ section rules{
 	root = {
 		location = "/":loc;
 		description = "ルート・エリア";
+		scale = 1[km];
 		geometry = [=[
 <?xml version="1.0" encoding="UTF-8"?>
 <geometry xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.xgmtk.org/Lore/Point Point.xsd"
-	xmlns="http://www.xgmtk.org/Point"
-	scale="1[km]">
+	xmlns="http://www.xgmtk.org/Point">
 	<point label="0" />
 </geometry>
 ]=];
 		environment = {
 			height = 0.0[m];
+			rotation = 0[degree];
 		}:Environment;
 	}: Area;
-	
-	/*
-	初期化処理。
-	すべてのキャラクタ（PCとNPC）に行動予定を尋ねる。
-	system.allPCはシナリオ中の全てのキャラクタのリスト。
-	forではリスト全ての要素に対する処理が並列的に行われ、全てが終わるのを待つ。
-	*/
-	rule initial{
-		system.allPC.foreach(@(actor : Actor){
-			select(actor){
-				as(pc : PC){
-					pc.choice;
-				}
-				default{
-					//Do nothing, ignore.
-				}
-			}
-		});
-	}
 
 	/* キャラクタを表現するデータ型の定義 */
 	form PC extends Actor{
@@ -173,10 +155,7 @@ section rules{
 			period = ceil(period_sec, 1[R]);
 			
 			// 指定された時間経過後に移動完了の処理をするためのイベントを登録します。
-			schedule.addEvent(schedule.current+delay, 0, moved, pc, goal);
-			
-			// 「移動」完了の1ラウンド後に再び予定を尋ねるためにイベント登録。
-			self.futureChoice(1[R]);
+			self.futureMove(delay, goal);
 			
 			/*
 			この例では簡単のため移動完了に対応するイベントのみ登録していますが、
@@ -186,7 +165,7 @@ section rules{
 		}
 
 		/*
-		指定されたラウンド数経過後に再び予定を尋ねるためにイベント登録。
+		指定されたラウンド数経過後に再び予定を尋ねるためのイベントを登録。
 		scheduleはシステムで定義されている変数。
 		*/
 		rule futureChoice(period : unit[R]){
@@ -200,8 +179,9 @@ section rules{
 		}
 		
 		/*
-		指定されたラウンド数経過後にキャラクタの位置を更新するためにイベント登録。
+		指定されたラウンド数経過後にキャラクタの位置を更新するためのイベントを登録。
 		scheduleはシステムで定義されている変数。
+		移動完了後(同時刻、１)に予定を尋ねるためにイベント登録
 		*/
 		rule futureMove(period : unit[R], location : loc){
 			schedule.add({
@@ -209,6 +189,13 @@ section rules{
 				priority = 0;
 				handler = @{
 					self.moved(location);
+				};
+			}:Event);
+			schedule.add({
+				ticks = schedule.current+period;
+				priority = 1;
+				handler = @{
+					self.choice;
 				};
 			}:Event);
 		}
@@ -224,4 +211,39 @@ section rules{
 			self.location := goals.get1st;
 		}
 	}
+	
+	/*
+	初期化処理。
+	すべてのキャラクタ（PCとNPC）に行動予定を尋ねる。
+	system.allPCはシナリオ中の全てのキャラクタのリスト。
+	forではリスト全ての要素に対する処理が並列的に行われ、全てが終わるのを待つ。
+	*/
+	rule initial{
+		system.allPC.foreach(@(actor : Actor){
+			select(actor){
+				as(pc : PC){
+					pc.choice;
+				}
+				default{
+					//Do nothing, ignore.
+				}
+			}
+		});
+	}
+	
+	form PCTrigger extends Trigger{
+		handler = @(actor : Actor){
+			select(actor){
+				as(pc : PC){
+					pcHandler(pc);
+				}
+				default{
+					//Do nothing, ignore.
+				}
+			}
+		}
+		
+		pcHandler : @<(PC)>;
+	}
+	
 }//Section rulesの終わり
