@@ -241,7 +241,7 @@ section rules{
 					//Do nothing, ignore.
 				}
 			}
-		}
+		};
 		
 		pcHandler : @<(PC)>;
 	}
