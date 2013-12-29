@@ -22,7 +22,7 @@ import "scenario.lore":url;
 */
 section _auto_stored {
 	// GMのJIDを記録。
-	master = “chihiro@xmpp.xgmtk.org”:jid;
+	master = "chihiro@xmpp.xgmtk.org":jid;
 
 	// 典型的にはセッション内の現在時刻及び、
 	// イベント・オブジェクトが以下の形式で保管される。
