@@ -7,7 +7,8 @@ history("2013-12-22T00:00:00+09:00":date){reviser="椎路 ちひろ",desc="改�
 
 // 基本型のインポート
 import "basic.lore":url;
-// シナリオのインポート
+// ルールとシナリオのインポート
+import "rules.lore":url;
 import "scenario.lore":url;
 
 /*
@@ -20,9 +21,11 @@ import "scenario.lore":url;
 この部分のフォーマットは暫定的な物で、開発が進むにつれて変わるであろう。
 */
 section _auto_stored {
-	/*
-	典型的にはセッション内の現在時刻及び、イベント・オブジェクトが以下の形式で保管される。
-	*/
+	// GMのJIDを記録。
+	master = “chihiro@xmpp.xgmtk.org”:jid;
+
+	// 典型的にはセッション内の現在時刻及び、
+	// イベント・オブジェクトが以下の形式で保管される。
 	schedule = {
 		ticks = 86400;//シナリオ開始からゲーム時間で1日後
 		priority = 0;
