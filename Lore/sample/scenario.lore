@@ -90,7 +90,7 @@ section scenario{
 		features=list<Featur>.empty;
 		items=list<Item>.empty;
 		knownSecrets=list<string>.empty;
-		}:PC;
+		}:rules.PC;
 
 	/*
 	所有者未定の宝箱は「とあるミニマムなダンジョン」の「祭壇」の位置に…。
@@ -101,8 +101,8 @@ section scenario{
 		features=list<Featur>.empty;
 		secrets = {
 			{
-					key = "secret0";
-					mode = Secret.Mode.hide;
+				key = "secret0";
+				mode = Secret.Mode.hide;
 			}:Secret
 		};
 	}:Item;
@@ -119,12 +119,12 @@ section scenario{
 		/*
 		ダンジョンに入るためのイベントのハンドラ
 		*/
-		pcHandler = @(pc : PC){
+		pcHandler = @(pc : rules.PC){
 			// 指定された時間経過後に移動完了の処理をするためのイベントを登録します。
 			pc.futureMove(1[R], "/region/dungeon[1,4]":loc);
 			pc.message("ダンジョンに入ります。");
 		};
-	}:PCTrigger;
+	}:rules.PCTrigger;
 
 	/*
 	「とあるミニマムなダンジョン」から「とある地方」からへエリア間移動のためのトリガ。
@@ -138,19 +138,12 @@ section scenario{
 		/*
 		ダンジョンを出るためのイベントのハンドラ
 		*/
-		pcHandler = @(pc : PC){
+		pcHandler = @(pc : rules.PC){
 			// 指定された時間経過後に移動完了の処理をするためのイベントを登録します。
-			select(actor){
-				as(pc : PC){
-					pc.futureMove(1[R], "/region[dungeon]":loc);
-				}
-				default{
-					//Do nothing, ignore.
-				}
-			}
-			actor.message("ダンジョンから出ます。");
+			pc.futureMove(1[R], "/region[dungeon]":loc);
+			pc.message("ダンジョンから出ます。");
 		};
-	}:PCTrigger;
+	}:rules.PCTrigger;
 
 	/*
 	宝箱発見メッセージの表示のためのトリガ。
@@ -165,7 +158,7 @@ section scenario{
 		宝物発見のトリガのハンドラ。
 		秘密情報をキャラへ渡すことでたからばこを見えるようにするとともにメッセージを表示します。
 		*/
-		pcHandler = @(pc : PC){
+		pcHandler = @(pc : rules.PC){
 			// チェストに設定されている秘密情報をキャラに受け渡す
 			pc.addKnownSecret(chest.secrets.get(0).key);
 			/*
@@ -183,6 +176,6 @@ section scenario{
 </html>
 ]=]:html);
 		};
-	}:PCTrigger;
+	}:rules.PCTrigger;
 	
 }//Section scenarioの終わり
