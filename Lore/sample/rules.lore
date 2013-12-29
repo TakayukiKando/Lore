@@ -152,7 +152,7 @@ section rules{
 			period_sec = (distance.toReal / standard_velocity.toReal).toInt[sec];
 			
 			// ラウンド単位で時間を合わせるため所要時間をラウンド単位に切り上げます。
-			period = ceil(period_sec, 1[R]);
+			period = unit[R].ceil(period_sec);
 			
 			// 指定された時間経過後に移動完了の処理をするためのイベントを登録します。
 			self.futureMove(delay, goal);
@@ -171,7 +171,7 @@ section rules{
 		rule futureChoice(period : unit[R]){
 			schedule.add({
 				ticks = schedule.current+period;
-				priority = 0;
+				priority = 1;
 				handler = @{
 					self.choice;
 				};
@@ -191,13 +191,7 @@ section rules{
 					self.moved(location);
 				};
 			}:Event);
-			schedule.add({
-				ticks = schedule.current+period;
-				priority = 1;
-				handler = @{
-					self.choice;
-				};
-			}:Event);
+			futureChoice(period);
 		}
 
 		/* 移動完了処理のための位置更新メソッド。 */
