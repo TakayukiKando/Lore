@@ -2,6 +2,8 @@ docinfo{encoding="UTF-8", version="http://xgmtk.org/lore/1.0":url}
 desc("Hello World"){"Hello Worldを表示するだけのサンプル"}
 author("椎路 ちひろ"){"mailto:develop@xgmtk.org":url}
 
+import "basic.lore":url;
+
 section hello.world{
 	/*
 	開始直後（時刻0）にmainという名前のハンドラを呼び出すためのイベントです。
