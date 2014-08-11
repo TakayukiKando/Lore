@@ -1,6 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * [Apache License 2.0]
+ * Copyright 2014 T.Kando and Inuyama-ya sanpu.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 grammar Lore;
@@ -19,7 +31,7 @@ docinfo
     ;
 
 encoding
-    : 'encoding' '=' NORMALSTRING
+    : 'encoding' '=' shortStringLiteral
     ;
 
 version
@@ -27,15 +39,15 @@ version
     ;
 
 description
-    : 'desc' '(' stringLiteral ')' '{' ( stringLiteral | html )? '}'
+    : 'desc' '(' shortStringLiteral ')' '{' ( stringLiteral | html )? '}'
     ;
 
 author
-    : 'author' '(' NORMALSTRING ')' '{' ((jid|url) (',' (jid|url)*)?) '}'
+    : 'author' '(' shortStringLiteral ')' '{' ((jid|url) (',' (jid|url)*)?) '}'
     ;
 
 history
-    : 'history' '(' date ')' '{' 'reviser' '=' NORMALSTRING ',' 'desc' '=' stringLiteral '}'
+    : 'history' '(' date ')' '{' 'reviser' '=' shortStringLiteral ',' 'desc' '=' stringLiteral '}'
     ;
 
 import_other
@@ -58,7 +70,7 @@ section_element
     ;
 
 qName
-    : NAME ('.' NAME)*
+    : simpleName ('.' simpleName )*
     ;
 
 //definition
@@ -77,23 +89,31 @@ type_def
     ;
 
 enum_def
-    : 'enum' NAME ('extends' qName)?'{' enum_elem+ '}'
+    : 'enum' simpleName (extends_from)?'{' enum_elem+ '}'
+    ;
+
+extends_from
+    : 'extends' qName
     ;
 
 enum_elem
-    : NAME (( '{' enum_field (enum_field)* '}' )|';')
+    : simpleName (( '{' enum_field (enum_field)* '}' )|';')
     ;
 
 enum_field
-    : NAME '=' expression ';'
+    : simpleName '=' expression ';'
     ;
 
 unit_def
-    : UNIT_NAME '=' number (UNIT_NAME)? ';'
+    : unitName '=' ( integral | real ) (unitName)? ';'
     ;
 
 form_def
-    : 'form' NAME ('extends' qName)?'{' (private_member_def | member_def)* '}'
+    : 'form' simpleName (extends_from)? form_cont_def
+    ;
+
+form_cont_def
+    : '{' (private_member_def | member_def)* '}'
     ;
 
 private_member_def
@@ -107,20 +127,19 @@ member_def
     ;
 
 member_initializer
-    : constant_var_def
-    | var_def
-    | ('override')? accessor_def
-    | ('override')? alter_def
-    | ('override')? rule_def
-    |  function_def
+    : ('override')? initializer
     ;
-
-constant_var_def
-    :'constant' var_def
+    
+initializer
+    : var_def
+    | accessor_def
+    | alter_def
+    | rule_def
+    | function_def
     ;
 
 field_decl
-    : NAME ':' type_expr ';'
+    : type_spec ';'
     ;
 
 type_expr
@@ -137,15 +156,38 @@ builtin_type_expr
     ;
 
 lambda_type
-    : '@' '<'( '(' type_expr ( ',' type_expr )* ')' )? (':' type_expr)? '>'
+    : lambda_type_full
+    | lambda_type_no_param
+    | lambda_type_no_return
+    | lambda_type_no_param_no_return
+    ;
+lambda_type_full
+    : '@' '<' lambda_type_parameters '->' type_expr '>'
+    ;
+
+lambda_type_no_param
+    : '@' '<' '->' type_expr '>'
+    ;
+
+lambda_type_no_return
+    : '@' '<'lambda_type_parameters '>'
+    ;
+
+lambda_type_no_param_no_return
+    : '@' '<' '>'
+    ;
+
+lambda_type_parameters
+    : '(' (type_expr (',' type_expr)*)? ')'
+    | type_expr
     ;
 
 list_type
-    : 'list' '<'(type_expr| ('?' ('extends' (qName | builtin_type))?) )'>'
+    : 'list' '<'type_expr'>'
     ;
 
 unit_type
-    :'unit' UNIT_NAME
+    :'unit' unitName
     ;
 
 range_type
@@ -154,15 +196,24 @@ range_type
 
 builtin_type
     : arithmetic_type
-    | 'string'
+    | textual_type
+    | trpg_type
+    ;
+    
+textual_type
+    : 'string'
     | 'url'
     | 'jid'
     | 'html'
     | 'xml'
     | 'date'
-    | 'loc'
+    ;
+
+trpg_type
+    : 'loc'
     | 'dice'
     ;
+
 arithmetic_type
     : 'number'
     | 'integer'
@@ -171,23 +222,28 @@ arithmetic_type
 
 // function / rule / accessor / alter
 rule_def
-    : 'rule' NAME (parameters)? block 
+    : 'rule' simpleName (parameters)? block 
     ;
 
 function_def
-    : 'function' NAME (parameters)?':'type_expr block
+    : 'function' simpleName (parameters)? '->' type_expr block
     ;
 
 accessor_def
-    : NAME (parameters)?':'type_expr block
+    : simpleName (parameters)? '->' type_expr block
     ;
 
 alter_def
-    : 'alter' NAME '(' NAME ':' list_type ')' block
+    : 'alter' simpleName '(' type_spec ')' block
     ;
 
 parameters
-    : ('('NAME ':' type_expr (',' NAME ':' type_expr)*')')
+    : ('('type_spec (',' type_spec)*')')
+    | '()'
+    ;
+
+type_spec
+    :simpleName ':' type_expr
     ;
 
 block
@@ -223,13 +279,13 @@ result_statement
 //variable
 
 var_def
-    : NAME '=' expression ';'
+    : simpleName '=' expression ';'
     ;
 
 //field modification.
 //This syntax is only permitted to use in the "alter" type method.
 field_modify
-    : ('self' '.')? NAME ':=' expression ';'
+    : self '.' simpleName '=' expression ';'
     ;
 
 //expressions
@@ -251,7 +307,7 @@ case_block
     ;
 
 as_block
-    : 'as' '(' NAME ':' type_expr ')' block
+    : 'as' '(' type_spec ')' block
     ;
 default_block
     : 'default' block
@@ -282,7 +338,7 @@ terms
     ;
 
 term
-    : factor (('*' | '/' | '%' | 'D') factor)*
+    : factor (('*' | '/' | '%') factor)*
     ;
 
 factor
@@ -290,7 +346,18 @@ factor
     ;
 
 post_op
-    : (monomial (UNIT_NAME | DICE)? | DICE)
+    : monomial
+    | unit_monomial
+    | dice_monomial
+    ;
+
+unit_monomial
+    : monomial unitName
+    ;
+
+dice_monomial
+    : monomial diceKind
+    | diceKind
     ;
 
 monomial
@@ -298,7 +365,7 @@ monomial
     ;
 
 member_access
-    : '.' NAME (args)?
+    : '.' simpleName (args)?
     ;
 
 args
@@ -306,31 +373,73 @@ args
     ;
 
 atom
-    : 'self'
-    | NAME
-    | NAME args
+    : self
+    | qName
+    | simpleCall
     | literal
     | '(' expression ')'
     | list_construct
-    | struct_construct
+    | form_construct
     | builtin_type_expr
+    ;
+    
+self
+    : 'self'
+    ;
+
+simpleCall
+    : qName args
     ;
 
 list_construct
     : '{' expression (',' expression)* '}'
     ;
 
-struct_construct
-    : '{' (member_initializer)+ '}' (':' qName)?
+form_construct
+    : form_contents (':' qName)?
+    ;
+
+form_contents
+    : '{' (member_initializer)+ '}'
     ;
 
 lambda
-    : '@' (parameters)?(':' type_expr)? block
+    : lambda_full
+    | lambda_no_param
+    | lambda_no_return
+    | lambda_no_param_no_return
+    ;
+
+lambda_full
+    : '@' lambda_parameters '->' type_expr lambda_block
+    ;
+
+lambda_no_param
+    : '@' ('(' ')' )? '->' type_expr lambda_block
+    ;
+
+lambda_no_return
+    : '@' lambda_parameters lambda_block
+    ;
+
+lambda_no_param_no_return
+    : '@' ('(' ')' )? lambda_block
+    ;
+
+lambda_parameters
+    : '(' type_spec (',' type_spec)* ')'
+    | type_spec
+    ;
+
+lambda_block
+    : block
+    | expression
     ;
 
 //literals
 literal
-    : number
+    : integral
+    | real
     | stringLiteral
     | html
     | xml
@@ -349,29 +458,51 @@ xml
     ;
 
 url
-    : stringLiteral ':' 'url'
+    : shortStringLiteral ':' 'url'
     ;
 
 date
-    : stringLiteral ':' 'date'
+    : shortStringLiteral ':' 'date'
     ;
 
 
 jid
-    : stringLiteral ':' 'jid'
+    : shortStringLiteral ':' 'jid'
     ;
 
 loc
-    : stringLiteral ':' 'loc'
+    : shortStringLiteral ':' 'loc'
     ;
 
 stringLiteral
     : NORMALSTRING | CHARSTRING | LONGSTRING
     ;
 
-number
-    : INT | HEX | FLOAT | HEX_FLOAT
+shortStringLiteral
+    : NORMALSTRING | CHARSTRING
     ;
+
+integral
+    : INT
+    | HEX
+    ;
+
+real
+    : FLOAT
+    | HEX_FLOAT
+    ;
+
+diceKind
+    : DICE
+    ;
+
+unitName
+    : UNIT_NAME
+    ;
+
+simpleName
+    : NAME
+    ;      
 
 // LEXER
 
@@ -465,11 +596,12 @@ HexDigit
     ;
 
 COMMENT
-    : '/*' .*? '*/'-> channel(HIDDEN)
+    : ('/*' .*? '*/')-> channel(HIDDEN)
     ;
     
 LINE_COMMENT
-    : '//' '['? (~('['|'\n'|'\r') ~('\n'|'\r')*)? ('\n'|'\r')* -> channel(HIDDEN)
+//  : '//' '['? (~('['|'\n'|'\r') ~('\n'|'\r')*)? ('\n'|'\r')* -> channel(HIDDEN)
+    : ('//' (~('\r' | '\n')*)? (NEWLINE)*) -> channel(HIDDEN)
     ;
     
 WS

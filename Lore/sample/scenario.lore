@@ -82,7 +82,7 @@ section scenario{
 		}:Environment;
 	}:Area;
 
-		プレイヤー・キャラクターを「とある地方」の旅立ちの場に配置。
+		//プレイヤー・キャラクターを「とある地方」の旅立ちの場に配置。
 	pc = {
 		name="Chihiro";
 		player="Chihiro_Shiiji@xmpp.xgmtk.org":jid;

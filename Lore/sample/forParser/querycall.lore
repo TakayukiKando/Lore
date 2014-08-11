@@ -11,12 +11,12 @@ message0 = {
 
 hour = unit[hour].input((1,...,12));
 
-message0 = {
+message1 = {
 		message = "数字で時間を入力してください。";
 		hour = 1.0;
 	};
 
-message1 = {
+message2 = {
 		message = "数字で時間を入力してください。";
 		hour = unit[hour].input((1,...,12));
 	};
@@ -24,7 +24,7 @@ message1 = {
 period_hour1 = query({
 		message = "数字で時間を入力してください。";
 		hour = unit[hour].input((1,...,12));
-	});
+	}).hour;
 
 period_hour2 = query("何時間寝ますか？",
 			{

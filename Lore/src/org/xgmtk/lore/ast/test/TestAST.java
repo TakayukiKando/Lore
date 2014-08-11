@@ -1,109 +1,198 @@
+/*
+ * [Apache License 2.0]
+ * Copyright 2014 T.Kando and Inuyama-ya sanpu.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.xgmtk.lore.ast.test;
 
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.xgmtk.lore.ast.test.ASTMatchers.equalAST;
 
 import java.util.Iterator;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xgmtk.lore.ast.AST;
+import org.xgmtk.lore.ast.ASTNodes;
+import org.xgmtk.lore.ast.ASTVisitor;
+import org.xgmtk.lore.ast.ID;
+import org.xgmtk.lore.ast.Literal;
+import org.xgmtk.lore.ast.NodeType;
+import org.xgmtk.lore.ast.Locator;
 
+/**
+ * 
+ * @author kando
+ *
+ */
 public class TestAST {
+	private static int leafCount;
 	private static AST abcd;
 	private static AST abcd2;
 	private static AST abcde;
 
-	private static AST tree(String name, AST...subtrees){
-		return new AST(name, subtrees);
+	private static AST node(String name, AST... subtrees){
+		NodeType t = NodeType.getSymbol(name);
+		if(t == null){
+			if(subtrees.length != 0){
+				throw new IllegalArgumentException("ID and Literal should not have children.");
+			}
+			if((leafCount++)%2 == 0){
+				//System.err.println("create ID node \""+name+"\"");
+				return ASTNodes.id(name, Locator.NOWHERE);
+			}
+			//System.err.println("create Literal node \""+name+"\"");
+			return ASTNodes.lit(name, Locator.NOWHERE);
+		}
+		//System.err.println("create normal AST node \""+name+"\"");
+		return ASTNodes.node(t, Locator.NOWHERE, subtrees);
 	}
 	
 	@BeforeClass
 	static public void setupStatics(){
-		abcd = tree("abcd", 
-				tree("a"), 
-				tree("bcd", 
-						tree("bc", 
-								tree("b"), 
-								tree("c")
+		leafCount = 0;
+		abcd = node("/", 
+				node("a"), 
+				node("+", 
+						node("*", 
+								node("b"), 
+								node("c")
 						), 
-						tree("d")
+						node("d")
 				)
 		);
-		abcd2 = tree("abcd", 
-				tree("a"), 
-				tree("bcd", 
-						tree("bc", 
-								tree("b"), 
-								tree("c")
+		
+		leafCount = 0;
+		abcd2 = node("/", 
+				node("a"), 
+				node("+", 
+						node("*", 
+								node("b"), 
+								node("c")
 						), 
-						tree("d")
+						node("d")
 				)
 		);
-		abcde = tree("abcd", 
-				tree("a"), 
-				tree("bcd", 
-						tree("bc", 
-								tree("b"), 
-								tree("c")
+		
+		leafCount = 0;
+		abcde = node("/", 
+				node("a"), 
+				node("+", 
+						node("*", 
+								node("b"), 
+								node("c")
 						), 
-						tree("d"),
-						tree("e")
+						node("d"),
+						node("e")
 				)
 		);
 	}
 	
+	@Test
+	public void testEquals(){
+		assertThat(abcd, equalAST(abcd2));
+		assertThat(abcd2, equalAST(abcd));
+		assertThat(abcd, equalAST(abcd));
+			
+		assertThat(abcd, not(equalAST(abcde)));
+		assertThat(abcde, not(equalAST(abcd)));
+		assertThat(abcd, not(equalAST(null)));
+	}
+
 	@Test
 	public void testIterator(){
 		Iterator<AST> it = abcd.iterator();
 		StringBuilder log = new StringBuilder();
 		while(it.hasNext()){
 			AST t = it.next();
-			log.append(t.name).append(";");
+			if(t instanceof ID){
+				log.append(((ID)t).id).append(";");
+			}else if(t instanceof Literal){
+				log.append(((Literal<?>)t).value.toString()).append(";");
+			}else{
+				log.append(t.symbol.getSymbolString()).append(";");
+			}
 		}
-		String expectedLog = "abcd;a;abcd;bcd;bc;b;bc;c;bc;bcd;d;bcd;abcd;";
+		String expectedLog = "/;a;/;+;*;b;*;c;*;+;d;+;/;";
 
 		assertThat(log.toString(), is(expectedLog));
 	}
 	
 	@Test
-	public void testVisitor(){
-		class TVisitor implements AST.Visitor{
-			public final StringBuilder log = new StringBuilder();
-			
-			@Override
-			public void enter(AST node){
-				log.append(node.name).append("(");
-			}
-			
-			@Override
-			public void exit(AST node){
-				log.append(")");
-			}
+	public void testClone(){
+		AST clone = abcd.clone();
+		assertThat(clone, equalAST(abcd));
+		Iterator<AST> itExpected = abcd.iterator();
+		Iterator<AST> itClone = clone.iterator();
+		while(itExpected.hasNext()){
+			AST expectedNode = itExpected.next();
+			AST cloneNode = itClone.next();
+			assertThat(cloneNode, not(sameInstance(expectedNode)));
 		}
-		
-		TVisitor visitor = new TVisitor();
-		abcd.visit(visitor);
-		
-		String expectedLog = "abcd(a()bcd(bc(b()c())d()))";
-
-		assertThat(visitor.log.toString(), is(expectedLog));
 	}
 	
 	@Test
-	public void testEqualsAndHashCode(){
-		assertThat(abcd.equals(abcd2), is(true));
-		assertThat(abcd.equals(abcd), is(true));
-		assertThat(abcd2.equals(abcd), is(true));
+	public void testVisitor(){
+		final StringBuilder log = new StringBuilder();
 		
-		assertThat(abcd.hashCode(), is(abcd2.hashCode()));
-		assertThat(abcd.hashCode(), is(abcd.hashCode()));
-		assertThat(abcd2.hashCode(), is(abcd.hashCode()));
+		ASTVisitor visitor = new ASTVisitor(){
 
-		assertThat(abcd.equals(abcde), is(false));
-		assertThat(abcde.equals(abcd), is(false));
-		assertThat(abcd.equals(null), is(false));
+			@Override
+			public void enter(AST node) {
+				log.append(node.symbol.getSymbolString()).append("(");
+			}
+
+			@Override
+			public void exit(AST node) {
+				log.append(")");
+			}
+
+			@Override
+			public void enter(ID node) {
+				log.append(node.id).append("(");
+			}
+
+			@Override
+			public void exit(ID node) {
+				exit((AST)node);
+			}
+
+			@Override
+			public <T> void enter(Literal<T> node) {
+				log.append(node.value.toString()).append("(");
+			}
+
+			@Override
+			public <T> void exit(Literal<T> node) {
+				exit((AST)node);
+			}
+			
+		};
+		visitor.visitTo(abcd);
 		
-		assertThat(abcd.hashCode() == abcde.hashCode(), is(false));
+		String expectedLog = "/(a()+(*(b()c())d()))";
+
+		assertThat(log.toString(), is(expectedLog));
+	}
+	
+	@Test
+	public void testGetLocation(){
+		for(AST node : abcd){
+			assertThat(node.locator, sameInstance(Locator.NOWHERE));
+		}
 	}
 }

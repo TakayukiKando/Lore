@@ -13,7 +13,7 @@ section types {
 		sleep{caption="寝る";}
 	}
 
-	function mean(elements : list<? extends number>): real{
+	function mean(elements : list<real>)->real{
 		total = elements.sum;
 		result = total / elements.length;
 	}
@@ -41,7 +41,7 @@ section types {
 		current : integer;
 		hp_range : range<integer>;
 
-		live : boolean{
+		live -> boolean{
 			result = !hp_range.match(current);
 		}
 
@@ -64,7 +64,7 @@ section types {
 			crawl{factor=0.5;}
 		}
 
-		speed(mode : MobilityMode) : unit[m/s]{
+		speed(mode : MobilityMode) -> unit[m/s]{
 			result = mobility * mode.factor;
 		}
 	}
@@ -74,7 +74,7 @@ section types {
 	}
 
 	form Sample {
-		private constant cstr = "constant string";
+		private cstr = "constant string";
 		private form Inner{
 			link : Sample;
 			linkInner : Inner;

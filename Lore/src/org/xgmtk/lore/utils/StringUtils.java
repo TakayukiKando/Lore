@@ -14,15 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xgmtk.lore;
+package org.xgmtk.lore.utils;
 
 /**
- * Constants.
+ * 
  * @author kando
  *
  */
-public class Lore {
+public class StringUtils {
 
-	public static final String PROJECT_DOMAIN_NAME = "www.lore.xgmtk.org";
-
+	public static String trim(String text, String beginMark, String endMark) {
+		return text.substring(text.indexOf(beginMark)+beginMark.length(), text.lastIndexOf(endMark));
+	}
+	
+	public static String tabs(int depth) {
+		StringBuilder tabs = new StringBuilder();
+		for(int i = 0; i < depth; ++i){
+			tabs.append("\t");
+		}
+		return tabs.toString();
+	}
 }

@@ -2,20 +2,22 @@ desc("関数呼び出し"){[=[関数呼び出しの結果を格納する変数�
 パーサーのテスト用。
 ]=]}
 
-import "types":url;
+import "types.lore":url;
 
 period_hour0 = query("何時間寝ますか？");
-period_hour1 = query({
+
+period_hour_form = query({
 		message = "数字で時間を入力してください。";
 		hour = unit[hour].input((1,...,12));
 	});
-period_hour2 = query("何時間寝ますか？",
+	
+period_hour1 = query("何時間寝ますか？",
 			{
 				message = "数字で時間を入力してください。";
 				hour = unit[hour].input((1,...,12));
 			}).hour;
 
-period_hour3 = pc.query("何時間寝ますか？",
+period_hour2 = pc.query("何時間寝ますか？",
 			{
 				message = "数字で時間を入力してください。";
 				hour = unit[hour].input((1,...,12));
@@ -30,7 +32,7 @@ vInt0= A.fun(1);
 vInt1= fun(3*-2+1);
 vInt2= A.fun((vInt0+vInt1)%2);
 vInt3= fun(Math.abs(vInt1));
-vInt3= A.fun(Math.abs(vInt1));
+vInt4= A.fun(Math.abs(vInt1));
 
 vFloat0=fun(1.0);
 vFloat1=fun(3.1415 * -2.E-5 + 1.0E10, vFloat0+vFloat3)/2.0;

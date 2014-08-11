@@ -1,0 +1,27 @@
+/* function/rule invocation */
+
+CALL( name param_0,...,param_n)
+name //no parameters
+
+// name is qName or simpleName
+
+/* type of lambda */
+
+LAMBDA_TYPE(type, PARAMS(type_0,...,type_n))
+LAMBDA_TYPE(type, @PARAMS()) //no parameters
+LAMBDA_TYPE(PARAMS(type_0,...,type_n)) //no return value
+LAMBDA(PARAMS()) //no parameters and no return value
+
+/* function definition */
+FUNCTION( TYPE_SPEC(name, type), PARAMS(type_spec_0,...,type_spec_n), body)
+RULE(name, PARAMS(type_spec_0,...,type_spec_n), body)
+ACCESSOR( TYPE_SPEC(name, type), PARAMS(type_spec_0,...,type_spec_n), body)
+ALTER(name, type_spec, body)// type_spec should be list type
+
+/* lambda definition */
+LAMBDA(type, PARAMS(type_spec_0,...,type_spec_n), body)
+LAMBDA(type, PARAMS(), body) //no parameters
+LAMBDA(PARAMS(type_spec_0,...,type_spec_n), body) //no return value
+LAMBDA(PARAMS(), body) //no parameters and no return value
+
+

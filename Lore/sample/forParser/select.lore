@@ -8,7 +8,7 @@ import "types.lore":url;
 
 enum Hands { _1H; _2H; Sheild;}
 
-function selection(items: list<Item>, name: string): Hands{
+function selection(items: list<Item>, name: string)-> Hands{
 	result = select(items.get(0).name){
 		case ("dagger"){
 			result = Hands._1H;
@@ -39,7 +39,7 @@ rule selection(owner : Actor, items: list<Item>, name: string){
 form SampleActor extends Actor{
 	items: list<Item>;
 
-	get0Name : string{
+	get0Name -> string{
 		result = select(items.get(0)){
 			as (x : Dagger){
 				result = x.type.name;
@@ -58,7 +58,7 @@ form SampleActor extends Actor{
 			select(items.get(index)){
 				as (x : Dagger){
 					owner.message(x.type.name);
-					ownersequip(x);
+					owner.equip(x);
 				}
 				as (x : Claymore){
 					owner.message(x.type.name);

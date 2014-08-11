@@ -1,39 +1,44 @@
+/*
+ * [Apache License 2.0]
+ * Copyright 2014 T.Kando and Inuyama-ya sanpu.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.xgmtk.lore.ast;
 
-import java.io.File;
+
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Stack;
+import java.util.logging.Logger;
+
 
 /**
  * 
  * @author kando
  *
  */
-public class AST implements Iterable<AST>{
-	public static AST build(File src, String encoding) throws IOException{
-		ASTBuilder builder = new ASTBuilder(src, encoding);
+public class AST implements Iterable<AST>, Cloneable{
+	public static AST build(Path src, String encoding, Logger logger) throws IOException{
+		ASTBuilder builder = new ASTBuilder(src, encoding, logger);
 		return builder.getTree();
 	}
 	
-	public interface Visitor {
-		/**
-		 * This is called when entering a tree node.
-		 * @param node
-		 */
-		void enter(AST node);
-	
-		/**
-		 * This is called when exiting a tree node.
-		 * @param node
-		 */
-		void exit(AST node);
-	
-	}
-
 	/**
 	 * This iterator visits tree nodes in depth first manner.
 	 * Note: A non-leaf node would be visited in two or more times.
@@ -113,80 +118,90 @@ public class AST implements Iterable<AST>{
 			return this.last;
 		}
 	}
-	
+
+	public static void testExtendedPartEquality(AST a, AST b) throws Exception{
+		a.testExtendedPartEquality(b);
+	}
+
+	protected void testExtendedPartEquality(AST tb) throws Exception {
+		//default
+	}
+
 	/**
 	 * The name of the root node of this tree.
 	 */
-	public final String name;
+	public final NodeType symbol;
 	
+
+	public final Locator locator;
+
+
 	/**
 	 * The list of subtrees of this tree.
 	 */
-	public final List<AST> subtrees;
-	
+	private final List<AST> subtrees;
+
 	/**
 	 * Initializer.
 	 *  
-	 * @param name
+	 * @param symbol
 	 * @param subtrees
 	 */
-	public AST(String name, AST...subtrees){
-		this.name = name;
+	public AST(NodeType symbol, Locator location, AST...subtrees){
+		Objects.requireNonNull(symbol);
+		Objects.requireNonNull(location);
+		this.locator = location;
+		this.symbol = symbol;
 		List<AST> trees = new ArrayList<>();
 		for(AST t : subtrees){
+			Objects.requireNonNull(t);
 			trees.add(t);
 		}
-		this.subtrees = Collections.unmodifiableList(trees);
+		this.subtrees = trees;
 	}
 	
+	@Override
+	public AST clone(){
+		return new AST(this.symbol, this.locator, cloneChildren());
+	}
+
+	protected AST[] cloneChildren() {
+		AST[] subtrees = new AST[this.subtrees.size()];
+		int i = 0;
+		for(AST n : this.subtrees){
+			subtrees[i++] = n.clone();
+		}
+		return subtrees;
+	}
+
 	@Override
 	public DepthFirstIterator iterator(){
 		return new DepthFirstIterator(this);
 	}
-	
-	@Override
-	public boolean equals(Object o){
-		if(!(o instanceof AST)){
-			return false;
-		}
-		AST t = (AST)o;
-		if(!this.name.equals(t.name)){
-			return false;
-		}
-		if(this.subtrees.size() != t.subtrees.size()){
-			return false;
-		}
-		for(int i = 0; i < this.subtrees.size(); ++i){
-			if(!this.subtrees.get(i).equals(t.subtrees.get(i))){
-				return false;
-			}
-		}
-		return true;	
+
+	/**
+	 * Returns unmodifiable children list.
+	 * 
+	 * @return
+	 */
+	public List<AST> getMdifiableChildren() {
+		return this.subtrees;
 	}
 	
-	@Override
-	public int hashCode(){
-		int h = this.name.hashCode();
-		for(AST t: this.subtrees){
-			h += t.hashCode();
-		}
-		return h;
+	/**
+	 * Returns modifiable children list.
+	 * 
+	 * @return
+	 */
+	public List<AST> getChildren() {
+		return Collections.unmodifiableList(this.subtrees);
 	}
 
-	public void visit(Visitor visitor) {
-		DepthFirstIterator it = this.iterator();
-		while(it.hasNext()){
-			AST t = it.next();
-//			System.err.print(t.name);
-			if(it.firstVisited()){
-//				System.err.print(" (first: true)");
-				visitor.enter(t);
-			}
-			if(it.lastVisited()){
-//				System.err.print(" (last: true)");
-				visitor.exit(t);
-			}
-//			System.err.println(";");
-		}
+	void enter(ASTVisitor astVisitor) {
+		astVisitor.enter(this);
+	}
+
+	void exit(ASTVisitor astVisitor) {
+		astVisitor.exit(this);
 	}
 }

@@ -17,8 +17,9 @@ vFloat3=Math.cos(1.0);
 range0_5=0,...,5;
 range_1_0_2_5=-1.0<...,2.5;
 range1_10=0,...<10;
-range1_0_2_5=-1.0E-6<...<3.0E10;
-range1_0_2_5=vInt0<...<vFloat3;
+range1_0_3_0=-1.0E-6<...<3.0E10;
+rangeI0_F3=vInt0<...<vFloat3;
+
 unit0=0[km];
 range0=0[km],...,1[km];
 
@@ -42,12 +43,12 @@ dice1 = d6-2;
 dice2 = 4d8;
 dice3 = 4d;
 
-unit0 = 3[m]+(0.5*3)[km];
-unit1 = 9.8[m/s^2];
+unit1 = 3[m]+(0.5*3)[km];
+unit2 = 9.8[m/s^2];
 
-input0 = integer.input(0);
-input1 = list<real>.input;
-input2 = range<integer>.input(0);
-input3 = Actor.input(0);
-input4 = unit[m].input(0);
-input5 = unit[m].input((1,...,12));
+input0 = integer.input;
+input1 = list<real>.input(4);//length
+input2 = range<integer>.input;
+input3 = Actor.input;
+input4 = unit[m].input(6);//default
+input5 = unit[m].input((1,...,12), 6);//range and default

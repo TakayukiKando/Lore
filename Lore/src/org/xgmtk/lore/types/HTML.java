@@ -14,15 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xgmtk.lore;
+package org.xgmtk.lore.types;
+
+import java.util.logging.Logger;
+
+import org.xgmtk.lore.ast.Locator;
 
 /**
- * Constants.
+ * TODO write JavaDoc comment.
+ * 
  * @author kando
  *
  */
-public class Lore {
-
-	public static final String PROJECT_DOMAIN_NAME = "www.lore.xgmtk.org";
-
+public class HTML extends StringContainer {
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param content
+	 * @param loc
+	 * @param logger
+	 * @return
+	 */
+	public static HTML create(String content, Locator loc, Logger logger) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param content
+	 * @param baseLocator
+	 * @param logger
+	 */
+	public HTML(String content, Locator baseLocator, Logger logger) {
+		super(content, baseLocator, logger);
+	}
 }

@@ -8,10 +8,42 @@ import "types.lore":url;
 
 form ItemSet{
 	items : list<Item>;
-	encCalc : @<(list<Item>): unit[enc]>;
-	enc : unit[enc]{result = encCalc(items);}
+	encCalc : @<(list<Item>)-> unit[enc]>;
+	enc -> unit[enc]{result = encCalc(items);}
 
-	find (name : string):Item{
-		items.find1st(@(it : Item):boolean{result = it.name == name;});
+	find (name : string)->Item{
+		items.find1st(@(it : Item)->boolean{result = it.name == name;});
 	}
 }
+
+form LambdaSample{
+	l0 : @<real-> real>;
+	l1 : @<(real, real)-> real>;
+	l3 : @< -> real>;
+	l4 : @<(real, real)>;
+	l5 : @<real>;
+	l6 : @<>;
+}
+
+/*
+vForm = {
+	v0 = 0;
+	v1 = 1.0;
+	v3 = "2";
+}: F;
+*/
+
+lambda0 = @ x:real->real x*x;
+
+vLambdas = ({
+	l0 = @ x:real->real x*x;
+	l1 = @(a:real, b:real)->real {result=a*b;};
+	l3 = @ -> real 1.0;
+	l4 = @(a:real, b:real) {message(a+b);};
+	l5 = @ x:real {message(x);};
+	l6 = @{main;};
+}: LambdaSample);
+
+/*	l2 : @< ()-> real>;*/
+/*	l2 = @ ()-> real {result = 1.0;};*/
+
