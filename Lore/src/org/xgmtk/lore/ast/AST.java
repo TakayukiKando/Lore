@@ -39,6 +39,11 @@ public class AST implements Iterable<AST>, Cloneable{
 		return builder.getTree();
 	}
 	
+	public static AST build(Path src, Logger logger) throws IOException {
+		ASTBuilder builder = new ASTBuilder(src, logger);
+		return builder.getTree();
+	}
+
 	/**
 	 * This iterator visits tree nodes in depth first manner.
 	 * Note: A non-leaf node would be visited in two or more times.

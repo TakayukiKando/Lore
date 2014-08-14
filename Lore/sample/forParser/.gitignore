@@ -12,3 +12,4 @@
 /TestASTBuilder.testSelect.expected.txt
 /TestASTBuilder.testTypes.actual.txt
 /TestASTBuilder.testTypes.expected.txt
+/TestScopeBuilder.testBuild.actual.txt

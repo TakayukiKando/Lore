@@ -41,7 +41,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.xgmtk.lore.ast.AST;
-import org.xgmtk.lore.ast.ASTBuilder;
 import org.xgmtk.lore.ast.NodeType;
 import org.xgmtk.lore.ast.Locator;
 import org.xgmtk.lore.ast.PrintVisitor;
@@ -76,7 +75,7 @@ public class TestASTBuilder {
 	@Before
 	public void setup() throws FileNotFoundException{
 		String methodName = name.getMethodName();
-		this.logger = Logger.getLogger(methodName+"_log");
+		this.logger = Logger.getLogger(clsName+"_"+methodName+"_log");
 	}
 	
 	public void dumpTree(String name, AST tree, boolean ignoreLocator) throws FileNotFoundException {
@@ -93,7 +92,7 @@ public class TestASTBuilder {
 
 	public void testExactly(AST expectedTree, Path src) throws IOException{
 		String methodName = name.getMethodName();
-		AST actualTree = AST.build(src, ASTBuilder.DEFAULT_ENCODING, this.logger);
+		AST actualTree = AST.build(src, this.logger);
 		dumpTree(methodName+".expected", expectedTree, false);
 		dumpTree(methodName+".actual", actualTree, false);
 		assertThat(actualTree, equalAST(expectedTree));
@@ -101,7 +100,7 @@ public class TestASTBuilder {
 
 	public void testIgnoreLocator(AST expectedTree, Path src) throws IOException{
 		String methodName = name.getMethodName();
-		AST actualTree = AST.build(src, ASTBuilder.DEFAULT_ENCODING, this.logger);
+		AST actualTree = AST.build(src, this.logger);
 		dumpTree(methodName+".expected", expectedTree, true);
 		dumpTree(methodName+".actual", actualTree, true);
 		assertThat(actualTree, equalASTWithoutLocator(expectedTree));

@@ -14,21 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xgmtk.lore;
+package org.xgmtk.lore.symbols;
 
-import java.net.URI;
-
-/**
- * Constants.
- * @author kando
- *
- */
-public class Lore {
-
-	public static final String PROJECT_DOMAIN_NAME = "www.lore.xgmtk.org";
-
-	public static String errorMessageFormat(URI src, int line, String msg) {
-		return "[ "+src.toString()+" : "+line+" ]"+msg;
+public enum TypeConstructorSymbol implements Symbol, TypeConstructor {
+	RANGE("range"),
+	UNIT("unit"),
+	LIST("list"),
+	;
+	
+	private final String name;
+	
+	private TypeConstructorSymbol(String name){
+		this.name = name;
+	}
+	
+	@Override
+	public String getName() {
+		return this.name;
 	}
 
+	@Override
+	public boolean isPrivate() {
+		return false;
+	}
+
+	@Override
+	public String toString(){
+		return Symbol.getDescription(this);
+	}
 }

@@ -19,6 +19,7 @@ package org.xgmtk.lore.ast;
 import static org.xgmtk.lore.ast.ASTNodes.id;
 import static org.xgmtk.lore.ast.ASTNodes.node;
 import static org.xgmtk.lore.ast.ASTNodes.lit;
+import static org.xgmtk.lore.ast.EncodeFinder.findEncodeInfo;
 import static org.xgmtk.lore.ast.Locator.loc;
 import static org.xgmtk.lore.utils.StringUtils.trim;
 
@@ -31,9 +32,11 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
@@ -45,6 +48,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.xgmtk.lore.Lore;
 import org.xgmtk.lore.parser.LoreBaseListener;
 import org.xgmtk.lore.parser.LoreLexer;
 import org.xgmtk.lore.parser.LoreParser;
@@ -55,7 +59,24 @@ import org.xgmtk.lore.types.XML;
 
 public class ASTBuilder extends LoreBaseListener {
 	public static final String DEFAULT_ENCODING = "UTF-8";
+	public static final int HEADER_SCAN_LINES_FOR_FIND_ENCODING = 100;
 
+	public static void main(String[] args){
+		if(args.length == 0 || Arrays.stream(args).anyMatch(s -> (s.equals("-h") || s.equals("-help")))){
+			System.err.println("[USAGE]This command takes only 1 argument. It is a file path to parse.");
+		}
+		ASTBuilder builder = null;
+		try {
+			builder = new ASTBuilder(Paths.get(args[0]), Logger.getGlobal());
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		AST ast = builder.getTree();
+		PrintVisitor.printTree(ast, System.out, false);
+		System.exit(0);
+	}
+	
 	protected static void printContext(ParserRuleContext ctx) {
 		System.err.println("(Context object id: "+ctx+", line: "+ctx.start.getLine()+", \""+ctx.getText()+"\", child count: "+ctx.getChildCount()+"){");
 		for(int i = 0; i < ctx.getChildCount(); ++i){
@@ -81,10 +102,6 @@ public class ASTBuilder extends LoreBaseListener {
 		return -1;
 	}
 
-	protected static String errorMessageFormat(URI src, int line, String msg) {
-		return "[ "+src.toString()+" : "+line+" ]"+msg;
-	}
-
 	private static LoreParser getParser(File src, String encoding) throws FileNotFoundException,
 			IOException {
 		InputStream in = new FileInputStream(src);
@@ -106,6 +123,10 @@ public class ASTBuilder extends LoreBaseListener {
 	private List<AST> children;
 	private Stack<List<AST>> childrenStack;
 	private Logger logger;
+	
+	public ASTBuilder(Path source, Logger logger) throws IOException{
+		this(source, findEncodeInfo(source, HEADER_SCAN_LINES_FOR_FIND_ENCODING, DEFAULT_ENCODING), logger);
+	}
 
 	public ASTBuilder(Path source, String encoding, Logger logger) throws IOException{
 		super();
@@ -122,7 +143,7 @@ public class ASTBuilder extends LoreBaseListener {
 	}
 	
 	protected void error(ParserRuleContext ctx, String msg) {
-		logger.severe(errorMessageFormat(src, ctx.start.getLine(), msg));
+		logger.severe(Lore.errorMessageFormat(src, ctx.start.getLine(), msg));
 	}
 
 	/**

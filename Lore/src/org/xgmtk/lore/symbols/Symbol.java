@@ -14,21 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xgmtk.lore;
-
-import java.net.URI;
+package org.xgmtk.lore.symbols;
 
 /**
- * Constants.
+ * TODO write JavaDoc comment.
+ * 
  * @author kando
  *
  */
-public class Lore {
-
-	public static final String PROJECT_DOMAIN_NAME = "www.lore.xgmtk.org";
-
-	public static String errorMessageFormat(URI src, int line, String msg) {
-		return "[ "+src.toString()+" : "+line+" ]"+msg;
+public interface Symbol {
+	static String getDescription(Symbol s){
+		return "[\""+s.getName()+"\", "+(s.isPrivate()? "private": "public")+", \""+s.getClass().getSimpleName()+"\"]";
 	}
 
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @return
+	 */
+	String getName();
+
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @return
+	 */
+	boolean isPrivate();
 }

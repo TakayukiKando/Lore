@@ -14,21 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xgmtk.lore;
+package org.xgmtk.lore.symbols;
 
-import java.net.URI;
+import org.xgmtk.lore.ast.AST;
+import org.xgmtk.lore.ast.ASTVisitor;
+import org.xgmtk.lore.ast.ID;
+import org.xgmtk.lore.ast.Literal;
 
-/**
- * Constants.
- * @author kando
- *
- */
-public class Lore {
+public class DefaultASTVisitor extends ASTVisitor{
 
-	public static final String PROJECT_DOMAIN_NAME = "www.lore.xgmtk.org";
-
-	public static String errorMessageFormat(URI src, int line, String msg) {
-		return "[ "+src.toString()+" : "+line+" ]"+msg;
+	@Override
+	public void enter(AST node) {
+		// ignore
 	}
 
+	@Override
+	public void exit(AST node) {
+		// ignore
+	}
+
+	@Override
+	public void enter(ID node) {
+		// ignore
+	}
+
+	@Override
+	public void exit(ID node) {
+		// ignore
+	}
+
+	@Override
+	public <T> void enter(Literal<T> node) {
+		// ignore
+	}
+
+	@Override
+	public <T> void exit(Literal<T> node) {
+		// ignore
+	}
+	
 }

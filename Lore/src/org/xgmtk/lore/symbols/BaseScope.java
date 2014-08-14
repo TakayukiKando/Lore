@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xgmtk.lore.utils;
+package org.xgmtk.lore.symbols;
 
+import java.util.Optional;
 
 /**
  * TODO write JavaDoc comment.
@@ -23,30 +24,31 @@ package org.xgmtk.lore.utils;
  * @author kando
  *
  */
-public class StringUtils {
+public class BaseScope extends Scope{
 	/**
 	 * TODO write JavaDoc comment.
 	 * 
-	 * @param text
-	 * @param beginMark
-	 * @param endMark
+	 * @param symbols
 	 * @return
+	 * @throws AlreadyDefinedException
 	 */
-	public static String trim(String text, String beginMark, String endMark) {
-		return text.substring(text.indexOf(beginMark)+beginMark.length(), text.lastIndexOf(endMark));
+	public static BaseScope baseScope(Symbol...symbols) throws AlreadyDefinedException {
+		BaseScope baseScope = new BaseScope();
+		baseScope.defineAll(symbols);
+		return baseScope;
+	}
+
+	@Override
+	protected Optional<Symbol> resolveFromOuter(int depth, String...name) {
+		return Optional.empty();
 	}
 	
-	/**
-	 * TODO write JavaDoc comment.
-	 * 
-	 * @param depth
-	 * @return
-	 */
-	public static String tabs(int depth) {
-		StringBuilder tabs = new StringBuilder();
-		for(int i = 0; i < depth; ++i){
-			tabs.append("\t");
-		}
-		return tabs.toString();
+	void enter(ScopeTreeVisitor astVisitor) {
+		astVisitor.enter(this);
 	}
+
+	void exit(ScopeTreeVisitor astVisitor) {
+		astVisitor.exit(this);
+	}
+
 }

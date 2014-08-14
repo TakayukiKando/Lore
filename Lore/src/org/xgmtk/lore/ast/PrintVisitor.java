@@ -18,7 +18,9 @@ package org.xgmtk.lore.ast;
 
 import static org.xgmtk.lore.utils.StringUtils.tabs;
 
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 
 /**
  * 
@@ -26,11 +28,32 @@ import java.io.PrintStream;
  *
  */
 public class PrintVisitor extends ASTVisitor{
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param scope
+	 * @param prn
+	 */
+	public static void printTree(AST tree, PrintStream prn, boolean ignoreLocator) {
+		printTree(tree, new PrintWriter(new OutputStreamWriter(prn)), ignoreLocator);
+	}
+
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param scope
+	 * @param prn
+	 */
+	public static void printTree(AST tree, PrintWriter prn, boolean ignoreLocator) {
+		ASTVisitor printer = new PrintVisitor(prn, ignoreLocator);
+		printer.visitTo(tree);
+	}
+
 	private int depth;
-	private PrintStream out;
+	private PrintWriter out;
 	private boolean ignoreLocator;
 
-	public PrintVisitor(PrintStream out, boolean ignoreLocator){
+	public PrintVisitor(PrintWriter out, boolean ignoreLocator){
 		this.out = out;
 		this.depth = 0;
 		this.ignoreLocator = ignoreLocator;
@@ -56,13 +79,7 @@ public class PrintVisitor extends ASTVisitor{
 		--depth;
 		out.println(tabs(depth)+"}");
 	}
-
-	public static void printTree(AST tree, final PrintStream out, boolean ignoreLocator) {
-		ASTVisitor printer = new PrintVisitor(out, ignoreLocator);
-		
-		printer.visitTo(tree);
-	}
-
+	
 	@Override
 	public void enter(ID node) {
 		enter((AST)node);
