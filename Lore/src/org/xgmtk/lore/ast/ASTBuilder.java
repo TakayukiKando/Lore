@@ -23,15 +23,11 @@ import static org.xgmtk.lore.ast.EncodeFinder.findEncodeInfo;
 import static org.xgmtk.lore.ast.Locator.loc;
 import static org.xgmtk.lore.utils.StringUtils.trim;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
@@ -67,7 +63,7 @@ public class ASTBuilder extends LoreBaseListener {
 		}
 		ASTBuilder builder = null;
 		try {
-			builder = new ASTBuilder(Paths.get(args[0]), Logger.getGlobal());
+			builder = new ASTBuilder(Paths.get(args[0]).toFile().toURI().toURL(), Logger.getGlobal());
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -102,12 +98,12 @@ public class ASTBuilder extends LoreBaseListener {
 		return -1;
 	}
 
-	private static LoreParser getParser(File src, String encoding) throws FileNotFoundException,
+	private static LoreParser getParser(URL source, String encoding) throws FileNotFoundException,
 			IOException {
-		InputStream in = new FileInputStream(src);
+		InputStream in = source.openStream();
 		InputStreamReader rd = new InputStreamReader(in, encoding);
 		
-		System.err.println("["+LoreParser.class.getSimpleName()+"] File: \""+src+"\", Encoding: \""+rd.getEncoding()+"\"");
+		System.err.println("["+LoreParser.class.getSimpleName()+"] File: \""+source+"\", Encoding: \""+rd.getEncoding()+"\"");
 		ANTLRInputStream ain = new ANTLRInputStream(rd);
 
 		LoreLexer lexer = new LoreLexer(ain);
@@ -116,7 +112,7 @@ public class ASTBuilder extends LoreBaseListener {
 		return parser;
 	}
 	
-	private URI src;
+	private URL src;
 	private LoreParser parser;
 	private AST tree;
 		
@@ -124,15 +120,15 @@ public class ASTBuilder extends LoreBaseListener {
 	private Stack<List<AST>> childrenStack;
 	private Logger logger;
 	
-	public ASTBuilder(Path source, Logger logger) throws IOException{
+	public ASTBuilder(URL source, Logger logger) throws IOException{
 		this(source, findEncodeInfo(source, HEADER_SCAN_LINES_FOR_FIND_ENCODING, DEFAULT_ENCODING), logger);
 	}
 
-	public ASTBuilder(Path source, String encoding, Logger logger) throws IOException{
+	public ASTBuilder(URL source, String encoding, Logger logger) throws IOException{
 		super();
 		this.logger = logger;
-		src = source.toUri();
-		parser = getParser(source.toFile(), encoding);
+		src = source;
+		parser = getParser(source, encoding);
 		parser.addParseListener(this);
 		this.tree = null;
 		
@@ -1084,15 +1080,14 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitUrl(@NotNull LoreParser.UrlContext ctx) {
 		Object v = ((Literal<?>)this.getChildrenList().get(0)).value;
-		String urlStr = (String)v;
-		URI uri;
-		try {
-			uri = new URI(urlStr);
-		} catch (URISyntaxException e) {
-			error(ctx, "URI syntax error.");
-			uri = Locator.NOWHERE.file;
+		URL url = null;
+		try{
+			url = Lore.getURL((String)v, src);
+		}catch(IllegalArgumentException e){
+			error(ctx, e.getMessage());
+			url = Locator.NOWHERE.file;
 		}
-		AST n = lit(uri, loc(src, ctx.start.getLine()));
+		AST n = lit(url, loc(src, ctx.start.getLine()));
 		this.result(n);
 	}
 

@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xgmtk.lore.ast.scanner;
-
-import org.xgmtk.lore.ast.AST;
+package org.xgmtk.lore.ast;
 
 /**
  * TODO write JavaDoc comment.
@@ -24,14 +22,44 @@ import org.xgmtk.lore.ast.AST;
  * @author kando
  *
  */
-@FunctionalInterface
-public interface PartialASTScanner{
+public class LoreASTException extends Exception {
+
+	/**
+	 * TODO write JavaDoc comment.
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	private Locator locator;
+
 	/**
 	 * TODO write JavaDoc comment.
 	 * 
-	 * @param visitor
-	 * @param node
-	 * @throws UnexpectedNodeException
+	 * @param locator
+	 * @param message
 	 */
-	void matched(ASTScannerContext visitor, AST node) throws UnexpectedNodeException, UnexpectedLiteralType;
+	public LoreASTException(Locator locator, String message) {
+		super(message);
+		this.locator = locator;
+	}
+	
+	/**
+	 * TODO write JavaDoc comment.
+	 *
+	 * @param locator
+	 * @param message
+	 * @param t
+	 */
+	public LoreASTException(Locator locator, String message, Throwable t) {
+		super(message, t);
+		this.locator = locator;
+	}
+	
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @return
+	 */
+	public Locator getLocator(){
+		return this.locator;
+	}
 }

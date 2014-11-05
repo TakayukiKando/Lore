@@ -16,7 +16,10 @@
  */
 package org.xgmtk.lore.ast.scanner;
 
-import org.xgmtk.lore.ast.AST;
+import java.util.Arrays;
+
+import org.xgmtk.lore.ast.Locator;
+import org.xgmtk.lore.ast.LoreASTException;
 
 /**
  * TODO write JavaDoc comment.
@@ -24,14 +27,20 @@ import org.xgmtk.lore.ast.AST;
  * @author kando
  *
  */
-@FunctionalInterface
-public interface PartialASTScanner{
+public class UnexpectedLiteralType extends LoreASTException {
+
 	/**
 	 * TODO write JavaDoc comment.
-	 * 
-	 * @param visitor
-	 * @param node
-	 * @throws UnexpectedNodeException
 	 */
-	void matched(ASTScannerContext visitor, AST node) throws UnexpectedNodeException, UnexpectedLiteralType;
+	private static final long serialVersionUID = 1L;
+
+	@SafeVarargs
+	public UnexpectedLiteralType(Locator locator, Class<? extends Object> actual, Class<? extends Object>... expecteds) {
+		super(locator, "Expected literal type(s) is(are) "+
+				Arrays.stream(expecteds, 0, expecteds.length)
+				.map(cls->"\""+cls.getName()+"\"")
+				.reduce("", (a,b)->String.join(", ", a, b))+
+				" but \""+actual.getName()+"\".");
+	}
+	
 }

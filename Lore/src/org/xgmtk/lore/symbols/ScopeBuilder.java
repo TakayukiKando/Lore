@@ -27,17 +27,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.logging.Logger;
 
 import org.xgmtk.lore.Lore;
 import org.xgmtk.lore.ast.AST;
-import org.xgmtk.lore.ast.ASTVisitor;
 import org.xgmtk.lore.ast.ID;
 import org.xgmtk.lore.ast.Literal;
 import org.xgmtk.lore.ast.Locator;
@@ -46,23 +41,16 @@ import org.xgmtk.lore.symbols.Scope.AlreadyDefinedException;
 
 public class ScopeBuilder{
 	protected class DefinitionVisitor extends DefaultASTVisitor{
-		private final Path src;
 		private Scope current;
 		private boolean currentPrivacy;
 		
-		public DefinitionVisitor(Scope root, Path src) {
-			this.src = src;
+		public DefinitionVisitor(Scope root) {
 			this.current = root;
 		}
 
 		@Override
 		public void enter(AST node) {
 			switch(node.symbol){
-			case IMPORT:
-				ImportVisitor impv = new ImportVisitor();
-				impv.visitTo(node);
-				addSrc(this.src, impv.uri);
-				break;
 			case SECTION:
 				processSection(node);
 				break;
@@ -202,16 +190,13 @@ public class ScopeBuilder{
 		System.exit(0);
 	}
 
-	private Queue<Path> queue;
-	private Map<Path, AST> asts;
+
+	
 	private Logger logger;
 	private GlobalScope root;
 
 	public ScopeBuilder(Logger logger, Path baseSrc) throws IOException {
 		this.logger = logger;
-		this.queue = new LinkedList<>();
-		this.asts = new HashMap<>();
-		this.queue.add(baseSrc);
 		try {
 			this.root = globalScope();
 		} catch (AlreadyDefinedException e) {
@@ -223,28 +208,7 @@ public class ScopeBuilder{
 		return this.root;
 	}
 
-	protected void addSrc(Path baseSrc, URI newURI) {
-		Path newSrc = Paths.get(newURI.toString());
-		if(!newSrc.isAbsolute()){
-			newSrc = baseSrc.getParent().resolve(newSrc);
-		}
-		this.queue.add(newSrc);
-	}
 
 	public void build() throws IOException{
-		for(;;){
-			Path src = this.queue.poll();
-			if(src == null){
-				break;
-			}
-			if(this.asts.containsKey(src)){
-				//Skip.
-				continue;
-			}
-			AST ast = AST.build(src, logger);
-			this.asts.put(src, ast);
-			ASTVisitor v = new DefinitionVisitor(this.root, src);
-			v.visitTo(ast);
-		}
 	}
 }

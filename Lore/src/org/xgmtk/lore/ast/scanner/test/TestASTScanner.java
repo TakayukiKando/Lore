@@ -1,3 +1,19 @@
+/*
+ * [Apache License 2.0]
+ * Copyright 2014 T.Kando and Inuyama-ya sanpu.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.xgmtk.lore.ast.scanner.test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -5,8 +21,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -27,6 +43,7 @@ import org.xgmtk.lore.ast.Literal;
 import org.xgmtk.lore.ast.NodeType;
 import org.xgmtk.lore.ast.scanner.ASTScanner;
 import org.xgmtk.lore.ast.scanner.ASTScannerEventType;
+import org.xgmtk.lore.ast.scanner.UnexpectedLiteralType;
 import org.xgmtk.lore.ast.scanner.UnexpectedNodeException;
 
 public class TestASTScanner {
@@ -71,13 +88,13 @@ public class TestASTScanner {
 		});
 		this.logger.setLevel(Level.ALL);
 		this.src = dir.resolve("lambda.lore");
-		this.ast = AST.build(this.src, this.logger);
+		this.ast = AST.build(this.src.toUri().toURL(), this.logger);
 		this.scanner = new ASTScanner(this.logger);
 	}
 	
 	@Test
-	public void testVisitImport() throws URISyntaxException, UnexpectedNodeException{
-		final List<Literal<?>> literals = new ArrayList<>();
+	public void testVisitImport() throws UnexpectedNodeException, UnexpectedLiteralType, MalformedURLException{
+		final List<URL> literals = new ArrayList<>();
 //		PrintVisitor.printTree(this.ast, 
 //				new PrintWriter(new FileOutputStream(dir.resolve("lambda.lore.ast.txt").toFile())), true);
 		this.scanner.putPartialScanner(NodeType.IMPORT, (context, node)->{
@@ -89,19 +106,21 @@ public class TestASTScanner {
 			if(!context.isLiteralStart()){
 				fail();
 			}
-			literals.add(context.getLiteral());
+			Literal<?> literal = context.getLiteral();
+			if(!(literal.value instanceof URL)){
+				throw new UnexpectedLiteralType(literal.locator, literal.value.getClass(), URL.class);
+			}
+			literals.add((URL)literal.value);
 			context.ｌeaveNode(node);
 		});
 		
 		this.scanner.scan(ast);
 		
-		assertThat(literals.size(), is(1));
-		assertThat(literals.get(0).value instanceof URI, is(true));
-		assertThat(((URI)literals.get(0).value), is(new URI("types.lore")));
+		assertThat(literals, is(Arrays.asList(dir.resolve("types.lore").toUri().toURL())));
 	}
 	
 	@Test
-		public void testVisitImportAndRequireErrorNodeSymbolAndEventType(){
+		public void testVisitImportAndRequireErrorNodeSymbolAndEventType() throws UnexpectedLiteralType{
 	//		PrintVisitor.printTree(this.ast, 
 	//				new PrintWriter(new FileOutputStream(dir.resolve("lambda.lore.ast.txt").toFile())), true);
 			this.scanner.putPartialScanner(NodeType.IMPORT, (context, node)->{
@@ -124,7 +143,7 @@ public class TestASTScanner {
 		}
 
 	@Test
-	public void testVisitImportAndRequireErrorNodeSymbol(){
+	public void testVisitImportAndRequireErrorNodeSymbol() throws UnexpectedLiteralType{
 //		PrintVisitor.printTree(this.ast, 
 //				new PrintWriter(new FileOutputStream(dir.resolve("lambda.lore.ast.txt").toFile())), true);
 		this.scanner.putPartialScanner(NodeType.IMPORT, (context, node)->{
@@ -141,7 +160,7 @@ public class TestASTScanner {
 	}
 	
 	@Test
-	public void testVisitImportAndRequireErrorEventType(){
+	public void testVisitImportAndRequireErrorEventType() throws UnexpectedLiteralType{
 //		PrintVisitor.printTree(this.ast, 
 //				new PrintWriter(new FileOutputStream(dir.resolve("lambda.lore.ast.txt").toFile())), true);
 		this.scanner.putPartialScanner(NodeType.IMPORT, (context, node)->{
@@ -158,7 +177,7 @@ public class TestASTScanner {
 	}
 	
 	@Test
-	public void testVisitFormAndTypeSpec() throws URISyntaxException, UnexpectedNodeException{
+	public void testVisitFormAndTypeSpec() throws UnexpectedNodeException, UnexpectedLiteralType{
 		final List<String> formDefIds = new ArrayList<>();
 		final List<String> typeSpecIds = new ArrayList<>();
 //		PrintVisitor.printTree(this.ast, 
@@ -198,7 +217,7 @@ public class TestASTScanner {
 		assertThat(typeSpecIds, is(Arrays.asList("items", "encCalc", "enc", "find", "name", "it", "l0", "l1", "l3", "l4", "l5", "l6", "x", "x", "a", "b", "a", "b", "x")));
 	}
 	@Test
-	public void testVisitFormAndeDelegateTypeSpec() throws URISyntaxException, UnexpectedNodeException{
+	public void testVisitFormAndeDelegateTypeSpec() throws UnexpectedNodeException, UnexpectedLiteralType{
 		final List<String> formDefIds = new ArrayList<>();
 		final List<String> formTypeSpecIds = new ArrayList<>();
 		final List<String> argTypeSpecIds = new ArrayList<>();

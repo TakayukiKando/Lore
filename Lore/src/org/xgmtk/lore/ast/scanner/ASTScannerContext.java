@@ -1,3 +1,19 @@
+/*
+ * [Apache License 2.0]
+ * Copyright 2014 T.Kando and Inuyama-ya sanpu.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.xgmtk.lore.ast.scanner;
 
 import java.util.Map;
@@ -91,7 +107,7 @@ public class ASTScannerContext{
 		}
 	}
 
-	protected void startScan(AST root) throws UnexpectedNodeException{
+	protected void startScan(AST root) throws UnexpectedNodeException, UnexpectedLiteralType{
 		Future<?> f = executor.submit(()->{visitor.visitTo(root);});
 		ASTScannerContext.ASTScanEvent ev = this.next();
 		this.skip(ev.node);
@@ -122,7 +138,7 @@ public class ASTScannerContext{
 		ASTScannerContext.ASTScanEvent event = this.next();
 		if(((event.node instanceof Literal<?>)||(event.node instanceof ID))
 		&& !event.type.equals(expectedType)){
-			throw new UnexpectedNodeException(AST.class, expectedType, event.node.getClass(), event.type);
+			throw new UnexpectedNodeException(event.node.locator, AST.class, expectedType, event.node.getClass(), event.type);
 		}
 		return event.node;
 	}
@@ -170,7 +186,7 @@ public class ASTScannerContext{
 	 */
 	public void require(NodeType symbol, ASTScannerEventType expectedType) throws UnexpectedNodeException{
 		if(!isNode(symbol, expectedType)){
-			throw new UnexpectedNodeException(AST.class, expectedType, symbol, lastEvent.node.getClass(), lastEvent.type, lastEvent.node.symbol);
+			throw new UnexpectedNodeException(lastEvent.node.locator, AST.class, expectedType, symbol, lastEvent.node.getClass(), lastEvent.type, lastEvent.node.symbol);
 		}
 	}
 
@@ -218,7 +234,7 @@ public class ASTScannerContext{
 	public void ｌeaveNode(AST node) throws UnexpectedNodeException{
 		AST actualNode = this.nextNodeEvent(ASTScannerEventType.END);
 		if(actualNode != node){
-			throw new UnexpectedNodeException(node, actualNode);
+			throw new UnexpectedNodeException(actualNode.locator, node, actualNode);
 		}
 	}
 	
@@ -229,8 +245,9 @@ public class ASTScannerContext{
 	 * @param subPartialNodeListener
 	 * @return
 	 * @throws UnexpectedNodeException
+	 * @throws UnexpectedLiteralType 
 	 */
-	public <T extends PartialASTScanner> T delegate(AST rootOfSubtree, T subPartialNodeListener) throws UnexpectedNodeException{
+	public <T extends PartialASTScanner> T delegate(AST rootOfSubtree, T subPartialNodeListener) throws UnexpectedNodeException, UnexpectedLiteralType{
 		subPartialNodeListener.matched(this, rootOfSubtree);
 		return subPartialNodeListener;
 	}
@@ -240,8 +257,9 @@ public class ASTScannerContext{
 	 * 
 	 * @param rootOfSubtree
 	 * @throws UnexpectedNodeException
+	 * @throws UnexpectedLiteralType 
 	 */
-	public void skip(AST rootOfSubtree) throws UnexpectedNodeException{
+	public void skip(AST rootOfSubtree) throws UnexpectedNodeException, UnexpectedLiteralType{
 		for(;;){
 			ASTScannerContext.ASTScanEvent ev = this.next();
 //			this.logger.log(Level.FINEST, "ASTScannerContext#skipSubtree()"+
@@ -251,7 +269,7 @@ public class ASTScannerContext{
 //			"]");
 			if(ev.node == rootOfSubtree){
 				if(!ev.type.equals(ASTScannerEventType.END)){
-					throw new UnexpectedNodeException(rootOfSubtree.getClass(), ASTScannerEventType.END, ev.node.getClass(), ev.type);
+					throw new UnexpectedNodeException(ev.node.locator, rootOfSubtree.getClass(), ASTScannerEventType.END, ev.node.getClass(), ev.type);
 				}
 				return;
 			}
@@ -276,12 +294,12 @@ public class ASTScannerContext{
 	public Literal<?> getLiteral() throws UnexpectedNodeException{
 		if(!((lastEvent.node instanceof Literal<?>) 
 		&& lastEvent.type.equals(ASTScannerEventType.START))){
-			throw new UnexpectedNodeException(Literal.class, ASTScannerEventType.START, lastEvent.node.getClass(), lastEvent.type);
+			throw new UnexpectedNodeException(lastEvent.node.locator, Literal.class, ASTScannerEventType.START, lastEvent.node.getClass(), lastEvent.type);
 		}
 		ASTScannerContext.ASTScanEvent endEvent = this.next();
 		if(!((endEvent.node instanceof Literal<?>) 
 		&& endEvent.type.equals(ASTScannerEventType.END))){
-			throw new UnexpectedNodeException(Literal.class, ASTScannerEventType.END, endEvent.node.getClass(), endEvent.type);
+			throw new UnexpectedNodeException(endEvent.node.locator, Literal.class, ASTScannerEventType.END, endEvent.node.getClass(), endEvent.type);
 		}
 		return (Literal<?>)endEvent.node;
 	}
@@ -295,12 +313,12 @@ public class ASTScannerContext{
 	public ID getID() throws UnexpectedNodeException{
 		if(!((lastEvent.node instanceof ID) 
 		&& lastEvent.type.equals(ASTScannerEventType.START))){
-			throw new UnexpectedNodeException(ID.class, ASTScannerEventType.START, lastEvent.node.getClass(), lastEvent.type);
+			throw new UnexpectedNodeException(lastEvent.node.locator, ID.class, ASTScannerEventType.START, lastEvent.node.getClass(), lastEvent.type);
 		}
 		ASTScannerContext.ASTScanEvent endEvent = this.next();
 		if(!((endEvent.node instanceof ID) 
 		&& endEvent.type.equals(ASTScannerEventType.END))){
-			throw new UnexpectedNodeException(ID.class, ASTScannerEventType.END, endEvent.node.getClass(), endEvent.type);
+			throw new UnexpectedNodeException(endEvent.node.locator, ID.class, ASTScannerEventType.END, endEvent.node.getClass(), endEvent.type);
 		}
 		return (ID)endEvent.node;
 	}

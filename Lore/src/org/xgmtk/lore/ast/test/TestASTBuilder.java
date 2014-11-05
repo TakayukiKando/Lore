@@ -29,8 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
@@ -90,19 +89,19 @@ public class TestASTBuilder {
 		prn.flush();
 	}
 
-	public void testExactly(AST expectedTree, Path src) throws IOException{
-		String methodName = name.getMethodName();
+	public void testExactly(AST expectedTree, URL src) throws IOException{
 		AST actualTree = AST.build(src, this.logger);
-		dumpTree(methodName+".expected", expectedTree, false);
-		dumpTree(methodName+".actual", actualTree, false);
+//		String methodName = name.getMethodName();
+//		dumpTree(methodName+".expected", expectedTree, false);
+//		dumpTree(methodName+".actual", actualTree, false);
 		assertThat(actualTree, equalAST(expectedTree));
 	}
 
-	public void testIgnoreLocator(AST expectedTree, Path src) throws IOException{
-		String methodName = name.getMethodName();
+	public void testIgnoreLocator(AST expectedTree, URL src) throws IOException{
 		AST actualTree = AST.build(src, this.logger);
-		dumpTree(methodName+".expected", expectedTree, true);
-		dumpTree(methodName+".actual", actualTree, true);
+//		String methodName = name.getMethodName();
+//		dumpTree(methodName+".expected", expectedTree, true);
+//		dumpTree(methodName+".actual", actualTree, true);
 		assertThat(actualTree, equalASTWithoutLocator(expectedTree));
 	}
 	
@@ -126,8 +125,8 @@ public class TestASTBuilder {
 	}
 	
 	@Test
-		public void testFuncall() throws IOException, URISyntaxException{
-			Path srcPath = dir.resolve("funcall.lore");
+		public void testFuncall() throws IOException{
+			URL srcPath = dir.resolve("funcall.lore").toUri().toURL();
 			
 			AST expectedTree = nd(ROOT,
 //			desc("関数呼び出し"){[=[関数呼び出しの結果を格納する変数宣言構文のサンプル。
@@ -136,7 +135,7 @@ public class TestASTBuilder {
 			nd(DESC, lt("関数呼び出し"), lt("関数呼び出しの結果を格納する変数宣言構文のサンプル。"+NEWLINE+"パーサーのテスト用。"+NEWLINE)),
 			
 //			import "types":url;
-			nd(IMPORT, lt(new URI("types.lore"))),
+			nd(IMPORT, lt(dir.resolve("types.lore").toUri().toURL())),
 			
 //			period_hour0 = query("何時間寝ますか？");
 			nd(VAR, nd("period_hour0"), nd(CALL, nd("query"), lt("何時間寝ますか？"))),
@@ -305,8 +304,8 @@ public class TestASTBuilder {
 		}
 	
 	@Test
-	public void testQuerycall() throws IOException, URISyntaxException{
-		Path srcPath = dir.resolve("querycall.lore");
+	public void testQuerycall() throws IOException{
+		URL srcPath = dir.resolve("querycall.lore").toUri().toURL();
 
 		AST expectedTree = nd(ROOT, 
 //			desc("関数呼び出し"){[=[関数呼び出しの結果を格納する変数宣言構文のサンプル。
@@ -315,7 +314,7 @@ public class TestASTBuilder {
 			nd(DESC, lt("関数呼び出し"), lt("関数呼び出しの結果を格納する変数宣言構文のサンプル。"+NEWLINE+"パーサーのテスト用。"+NEWLINE)),
 
 //			import "types.lore":url;
-			nd(IMPORT, lt(new URI("types.lore"))),
+			nd(IMPORT, lt(dir.resolve("types.lore").toUri().toURL())),
 		
 //			period_hour0 = query("何時間寝ますか？");
 			nd(VAR, nd("period_hour0"), nd(CALL, nd("query"), lt("何時間寝ますか？"))),
@@ -380,8 +379,8 @@ public class TestASTBuilder {
 	}
 
 	@Test
-	public void testExpressions() throws IOException, URISyntaxException{
-		Path srcPath = dir.resolve("expressions.lore");
+	public void testExpressions() throws IOException{
+		URL srcPath = dir.resolve("expressions.lore").toUri().toURL();
 		
 		AST expectedTree = nd(ROOT,
 //			desc("変数宣言"){[=[変数宣言構文のサンプル。
@@ -390,7 +389,7 @@ public class TestASTBuilder {
 			nd(DESC, lt("変数宣言"), lt("変数宣言構文のサンプル。"+NEWLINE+"パーサーのテスト用。"+NEWLINE)),
 			
 //			import "types.lore":url;
-			nd(IMPORT, lt(new URI("types.lore"))),
+			nd(IMPORT, lt(dir.resolve("types.lore").toUri().toURL())),
 			
 //			vInt0= 1;
 			nd(VAR, nd("vInt0"), lt(1)),
@@ -499,8 +498,8 @@ public class TestASTBuilder {
 	}
 	
 	@Test
-	public void testTypes() throws IOException, Location.SyntaxException, URISyntaxException{
-		Path srcPath = dir.resolve("types.lore");
+	public void testTypes() throws IOException, Location.SyntaxException{
+		URL srcPath = dir.resolve("types.lore").toUri().toURL();
 		
 		AST expectedTree = nd(ROOT,
 //		desc("型宣言"){[=[型宣言構文のサンプル。
@@ -626,7 +625,7 @@ public class TestASTBuilder {
 			nd(FORM_DEF, nd("SampleActor"), nd("Actor"), nd(CONT, 
 				nd(VAR, nd("location"), lt(Location.parse("/[0]"))),
 				nd(VAR, nd("mobility"), nd(UNIT_VAL, lt(3.0), nd("[m/R]"))),
-				nd(VAR, nd("image"), lt(new URI("no_image.jpg"))),
+				nd(VAR, nd("image"), lt(dir.resolve("no_image.jpg").toUri().toURL())),
 				nd(TYPE_SPEC, nd("description"), nd("url")),
 				nd(TYPE_SPEC, nd("hp"), nd("HP")),
 				nd(TYPE_SPEC, nd("items"), nd(LIST_TYPE, nd("Item"))),
@@ -716,8 +715,8 @@ public class TestASTBuilder {
 	}
 
 	@Test
-	public void testLambda() throws IOException, URISyntaxException{
-			Path srcPath = dir.resolve("lambda.lore");
+	public void testLambda() throws IOException{
+			URL srcPath = dir.resolve("lambda.lore").toUri().toURL();
 			
 			AST expectedTree = nd(ROOT, 
 //				desc("関数値"){[=[関数値のサンプル。
@@ -726,7 +725,7 @@ public class TestASTBuilder {
 				nd(DESC, lt("関数値"), lt("関数値のサンプル。"+NEWLINE+"パーサーのテスト用。"+NEWLINE)),
 					
 //				import "types.lore":url;
-				nd(IMPORT, lt(new URI("types.lore"))),
+				nd(IMPORT, lt(dir.resolve("types.lore").toUri().toURL())),
 				
 //				[enc]=1.0;
 				nd(UNIT_DEF, nd("[enc]"), lt(1.0)),
@@ -817,8 +816,8 @@ public class TestASTBuilder {
 	}
 
 	@Test
-	public void testSelect() throws IOException, URISyntaxException{
-		Path srcPath = dir.resolve("select.lore");
+	public void testSelect() throws IOException{
+		URL srcPath = dir.resolve("select.lore").toUri().toURL();
 		
 		AST expectedTree = nd(ROOT ,
 //			desc("分岐"){[=[分岐のサンプル。
@@ -827,7 +826,7 @@ public class TestASTBuilder {
 			nd(DESC, lt("分岐"), lt("分岐のサンプル。"+NEWLINE+"パーサーのテスト用。"+NEWLINE)),
 			
 //			import "types.lore":url;
-			nd(IMPORT, lt(new URI("types.lore"))),
+			nd(IMPORT, lt(dir.resolve("types.lore").toUri().toURL())),
 			
 //			[enc]=1.0;
 			nd(UNIT_DEF, nd("[enc]"), lt(1.0)),
@@ -979,9 +978,8 @@ public class TestASTBuilder {
 	}
 
 	@Test
-	public void testHelloWorldWithLineNumber() throws URISyntaxException, IOException {
-		Path srcPath = dir.getParent().resolve("HelloWorld.lore");
-		URI src = srcPath.toUri();
+	public void testHelloWorldWithLineNumber()throws IOException {
+		URL src = dir.getParent().resolve("HelloWorld.lore").toUri().toURL();
 		
 		AST expectedTree =
 			node(ROOT, loc(src, 0), 
@@ -991,7 +989,7 @@ public class TestASTBuilder {
 				node(ENCODING, loc(src, 1),
 					lit("UTF-8", loc(src, 1))),
 				node(VERSION, loc(src, 1),
-					lit(new URI("http://xgmtk.org/lore/1.0"), loc(src, 1)))),
+					lit(new URL("http://xgmtk.org/lore/1.0"), loc(src, 1)))),
 
 //			desc("Hello World"){[=["Hello World"
 //			Hello Worldを表示するだけのサンプル。
@@ -1003,11 +1001,11 @@ public class TestASTBuilder {
 //			author("椎路 ちひろ"){'mailto:develop@xgmtk.org':url}
 			node(AUTHOR, loc(src, 3),
 				lit("椎路 ちひろ", loc(src, 3)),
-				lit(new URI("mailto:develop@xgmtk.org"), loc(src, 3))),
+				lit(new URL("mailto:develop@xgmtk.org"), loc(src, 3))),
 
 //			import "basic.lore":url;
 			node(IMPORT, loc(src, 6),
-				lit(new URI("basic.lore"), loc(src, 6))),
+				lit(dir.getParent().resolve("basic.lore").toUri().toURL(), loc(src, 6))),
 
 //			section hello.world{
 			node(SECTION, loc(src, 8),
@@ -1058,7 +1056,7 @@ public class TestASTBuilder {
 		/*
 		 * TODO correct the line number handling.
 		 */
-		testIgnoreLocator(expectedTree, srcPath);
+		testIgnoreLocator(expectedTree, src);
 //		testExactly(expectedTree, srcPath);
 	}
 }

@@ -14,24 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.xgmtk.lore.ast.scanner;
+package org.xgmtk.lore.ast.loader.test;
 
-import org.xgmtk.lore.ast.AST;
+public class TestLoader {
 
-/**
- * TODO write JavaDoc comment.
- * 
- * @author kando
- *
- */
-@FunctionalInterface
-public interface PartialASTScanner{
-	/**
-	 * TODO write JavaDoc comment.
-	 * 
-	 * @param visitor
-	 * @param node
-	 * @throws UnexpectedNodeException
-	 */
-	void matched(ASTScannerContext visitor, AST node) throws UnexpectedNodeException, UnexpectedLiteralType;
+	public TestLoader() {
+		// TODO 自動生成されたコンストラクター・スタブ
+	}
+
 }

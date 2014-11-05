@@ -24,13 +24,13 @@ public class TestEncodeFinder {
 
 	@Test
 	public void testFindEncodeInfoDefault() throws IOException{
-		String actualEnc = EncodeFinder.findEncodeInfo(dir.resolve("expressions.lore"), 100, "US-ASCII");
+		String actualEnc = EncodeFinder.findEncodeInfo(dir.resolve("expressions.lore").toUri().toURL(), 100, "US-ASCII");
 		assertThat(actualEnc, is("US-ASCII"));
 	}
 	
 	@Test
 	public void testFindEncodeInfo() throws IOException{
-		String actualEnc = EncodeFinder.findEncodeInfo(dir.getParent().resolve("HelloWorld.lore"), 100, "US-ASCII");
+		String actualEnc = EncodeFinder.findEncodeInfo(dir.getParent().resolve("HelloWorld.lore").toUri().toURL(), 100, "US-ASCII");
 		assertThat(actualEnc, not(is("UTF-8")));
 	}
 }

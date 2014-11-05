@@ -16,19 +16,81 @@
  */
 package org.xgmtk.lore;
 
-import java.net.URI;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Iterator;
 
 /**
- * Constants.
+ * Constants and Utilities.
+ * 
  * @author kando
  *
  */
 public class Lore {
 
+	/**
+	 * TODO write JavaDoc comment.
+	 */
 	public static final String PROJECT_DOMAIN_NAME = "www.lore.xgmtk.org";
 
-	public static String errorMessageFormat(URI src, int line, String msg) {
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param src
+	 * @param line
+	 * @param msg
+	 * @return
+	 */
+	public static String errorMessageFormat(URL src, int line, String msg) {
 		return "[ "+src.toString()+" : "+line+" ]"+msg;
+	}
+
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param urlCandidate
+	 * @param currentDocumentPath
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	public static URL getURL(String urlCandidate, URL currentDocumentPath) throws IllegalArgumentException {
+		URL url;
+		try {
+			url = new URL(urlCandidate);
+		} catch (MalformedURLException e0) {
+			Path basePath = null;
+			boolean isFileProtocol = currentDocumentPath.getProtocol().equals("file");
+			if(isFileProtocol){
+				basePath = (new File(currentDocumentPath.getPath())).toPath();
+			}else{
+				basePath = Paths.get(currentDocumentPath.getPath());
+			}
+			
+			Path path = basePath.getParent().resolve(urlCandidate).normalize();
+			
+			if(isFileProtocol){
+				try {
+					return path.toUri().toURL();
+				} catch (MalformedURLException e1) {
+					throw new IllegalArgumentException("URL syntax error for a value \""+urlCandidate+"\": [as an absolute URL: "+e0.getMessage()+"] and [as a relative file path: "+e1.getMessage()+"]");
+				}
+			}
+			Iterator<Path> it = path.iterator();
+			StringBuilder sb = new StringBuilder("/");
+			sb.append(it.next().toString());
+			while(it.hasNext()){
+				sb.append("/").append(it.next().toString());
+			}
+			try {
+				url = new URL(currentDocumentPath.getProtocol(), currentDocumentPath.getHost(), sb.toString());
+			} catch (MalformedURLException e1) {
+				throw new IllegalArgumentException("URL syntax error for a value \""+urlCandidate+"\": [as an absolute URL: "+e0.getMessage()+"] and [as a relative path: "+e1.getMessage()+"]");
+			}
+		}
+		return url;
 	}
 
 }

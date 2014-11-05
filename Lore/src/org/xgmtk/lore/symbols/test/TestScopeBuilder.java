@@ -82,7 +82,6 @@ public class TestScopeBuilder {
 	
 	@Test
 	public void testBuild() throws IOException{
-		Path srcPath = dir.resolve("expressions.lore");
 		Scope actualTree = Scope.build(srcPath, this.logger);
 		String methodName = name.getMethodName();
 		dumpTree(methodName+".actual", actualTree, System.err);

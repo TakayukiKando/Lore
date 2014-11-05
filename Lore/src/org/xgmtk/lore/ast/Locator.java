@@ -16,8 +16,8 @@
  */
 package org.xgmtk.lore.ast;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Objects;
 
 import org.xgmtk.lore.Lore;
@@ -31,20 +31,20 @@ public class Locator {
 	public static final Locator NOWHERE;
 	
 	static{
-		URI uri = null;
+		URL url = null;
 		try{
-			uri  = new URI("http//"+Lore.PROJECT_DOMAIN_NAME+"/anywhere");
-		}catch(URISyntaxException e){
-			//
+			url  = new URL("http://"+Lore.PROJECT_DOMAIN_NAME+"/anywhere");
+		}catch(MalformedURLException e){
+			throw new IllegalStateException("Unexpected internal error.", e);
 		}
-		NOWHERE = new Locator(uri, -1);
+		NOWHERE = new Locator(url, -1);
 	}
 	
-	public final URI file;
+	public final URL file;
 	public final int line;
 	//public final int column;
 	
-	public Locator(URI file, int line){
+	public Locator(URL file, int line){
 		this.file = file;
 		this.line = line;
 		//this.column = column;
@@ -72,7 +72,7 @@ public class Locator {
 		return sb.toString();
 	}
 
-	public static Locator loc(URI file, int line){
+	public static Locator loc(URL file, int line){
 		return new Locator(file, line);
 	}
 }

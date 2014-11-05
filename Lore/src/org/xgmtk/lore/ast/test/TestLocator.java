@@ -20,8 +20,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.junit.Test;
 import org.xgmtk.lore.Lore;
 import org.xgmtk.lore.ast.Locator;
@@ -30,12 +31,12 @@ public class TestLocator {
 	private static final String HTTP_URL_HEAD = "http://"+Lore.PROJECT_DOMAIN_NAME+"/";
 
 	@Test
-	public void testEquality() throws URISyntaxException{
-		Locator loc0 = new Locator(new URI(HTTP_URL_HEAD), 25);
-		Locator loc0_dash = new Locator(new URI(HTTP_URL_HEAD), 25);
-		Locator loc1 = new Locator(new URI(HTTP_URL_HEAD+"where"), 25);
-		Locator loc2 = new Locator(new URI(HTTP_URL_HEAD), 26);
-		Locator loc3 = new Locator(new URI(HTTP_URL_HEAD+"where"), 26);
+	public void testEquality() throws MalformedURLException{
+		Locator loc0 = new Locator(new URL(HTTP_URL_HEAD), 25);
+		Locator loc0_dash = new Locator(new URL(HTTP_URL_HEAD), 25);
+		Locator loc1 = new Locator(new URL(HTTP_URL_HEAD+"where"), 25);
+		Locator loc2 = new Locator(new URL(HTTP_URL_HEAD), 26);
+		Locator loc3 = new Locator(new URL(HTTP_URL_HEAD+"where"), 26);
 		
 		assertThat(loc0_dash, is(loc0));
 		assertThat(loc1, not(is(loc0)));

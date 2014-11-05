@@ -18,7 +18,7 @@ package org.xgmtk.lore.ast;
 
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -34,12 +34,12 @@ import java.util.logging.Logger;
  *
  */
 public class AST implements Iterable<AST>, Cloneable{
-	public static AST build(Path src, String encoding, Logger logger) throws IOException{
+	public static AST build(URL src, String encoding, Logger logger) throws IOException{
 		ASTBuilder builder = new ASTBuilder(src, encoding, logger);
 		return builder.getTree();
 	}
 	
-	public static AST build(Path src, Logger logger) throws IOException {
+	public static AST build(URL src, Logger logger) throws IOException {
 		ASTBuilder builder = new ASTBuilder(src, logger);
 		return builder.getTree();
 	}
