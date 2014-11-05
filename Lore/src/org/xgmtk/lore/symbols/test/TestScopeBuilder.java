@@ -50,11 +50,14 @@ public class TestScopeBuilder {
 	public TestName name = new TestName();
 	
 	private Logger logger;
+	private String methodName;
+	private Path srcPath;
 	
 	@Before
 	public void setup() throws FileNotFoundException{
-		String methodName = name.getMethodName();
-		this.logger = Logger.getLogger(clsName+"_"+methodName+"_log");
+		this.methodName = name.getMethodName();
+		this.logger = Logger.getLogger(clsName+"_"+this.methodName+"_log");
+		this.srcPath = dir.resolve("expressions.lore");
 	}
 	
 	public void dumpTree(String name, Scope scope) throws FileNotFoundException {
