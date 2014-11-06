@@ -28,9 +28,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.junit.Before;
@@ -39,12 +37,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.xgmtk.lore.ast.AST;
-import org.xgmtk.lore.ast.Literal;
 import org.xgmtk.lore.ast.NodeType;
 import org.xgmtk.lore.ast.scanner.ASTScanner;
 import org.xgmtk.lore.ast.scanner.ASTScannerEventType;
 import org.xgmtk.lore.ast.scanner.UnexpectedLiteralType;
 import org.xgmtk.lore.ast.scanner.UnexpectedNodeException;
+import org.xgmtk.lore.utils.SystemErrorHandler;
 
 public class TestASTScanner {
 	private static Path wdir;
@@ -70,22 +68,7 @@ public class TestASTScanner {
 	public void setup() throws IOException{
 		this.methodName = name.getMethodName();
 		this.logger = Logger.getLogger(clsName+"_"+this.methodName+"_log");
-		this.logger.addHandler(new Handler(){
-			@Override
-			public void publish(LogRecord record) {
-				System.err.println(record.getMessage());
-			}
-
-			@Override
-			public void flush() {
-				System.err.flush();
-			}
-
-			@Override
-			public void close() throws SecurityException {
-				//System.err.close();
-			}
-		});
+		this.logger.addHandler(new SystemErrorHandler());
 		this.logger.setLevel(Level.ALL);
 		this.src = dir.resolve("lambda.lore");
 		this.ast = AST.build(this.src.toUri().toURL(), this.logger);
@@ -106,11 +89,7 @@ public class TestASTScanner {
 			if(!context.isLiteralStart()){
 				fail();
 			}
-			Literal<?> literal = context.getLiteral();
-			if(!(literal.value instanceof URL)){
-				throw new UnexpectedLiteralType(literal.locator, literal.value.getClass(), URL.class);
-			}
-			literals.add((URL)literal.value);
+			literals.add(context.getLiteral(URL.class));
 			context.ｌeaveNode(node);
 		});
 		

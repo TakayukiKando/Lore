@@ -16,6 +16,8 @@
  */
 package org.xgmtk.lore.ast;
 
+import org.xgmtk.lore.Lore;
+
 /**
  * TODO write JavaDoc comment.
  * 
@@ -38,7 +40,7 @@ public class LoreASTException extends Exception {
 	 * @param message
 	 */
 	public LoreASTException(Locator locator, String message) {
-		super(message);
+		super(Lore.errorMessageFormat(locator.file, locator.line, message));
 		this.locator = locator;
 	}
 	

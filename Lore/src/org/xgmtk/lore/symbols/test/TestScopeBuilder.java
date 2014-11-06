@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.xgmtk.lore.symbols.PrintVisitor;
 import org.xgmtk.lore.symbols.Scope;
+import org.xgmtk.lore.symbols.ScopeBuilder;
 
 public class TestScopeBuilder {
 	private static Path wdir;
@@ -84,6 +85,7 @@ public class TestScopeBuilder {
 	public void testBuild() throws IOException{
 		Scope actualTree = Scope.build(srcPath, this.logger);
 		String methodName = name.getMethodName();
+		System.err.println("*** TODO: implement: "+ScopeBuilder.class.getName()+"#"+"build()");
 		dumpTree(methodName+".actual", actualTree, System.err);
 	}
 

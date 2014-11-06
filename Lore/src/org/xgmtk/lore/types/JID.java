@@ -84,4 +84,23 @@ public class JID {
 		Objects.nonNull(jid);
 		// TODO check format.
 	}
+
+	@Override
+	public boolean equals(Object o){
+		if(!(o instanceof JID)){
+			return false;
+		}
+		JID j = (JID)o;
+		return this.jid.equals(j.jid);
+	}
+	
+	@Override
+	public int hashCode(){
+		return Objects.hash(this.jid);
+	}
+	
+	@Override
+	public String toString(){
+		return this.jid;
+	}
 }

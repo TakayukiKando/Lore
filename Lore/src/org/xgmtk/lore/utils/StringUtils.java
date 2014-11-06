@@ -16,6 +16,9 @@
  */
 package org.xgmtk.lore.utils;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 
 /**
  * TODO write JavaDoc comment.
@@ -24,6 +27,22 @@ package org.xgmtk.lore.utils;
  *
  */
 public class StringUtils {
+	
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param src
+	 * @return
+	 */
+	public static String escape(String src){
+		String[] sp = src.split("\"");
+		//Arrays.stream(sp).forEach((s)->System.err.println(s));
+		String rst = Arrays.stream(sp).collect(Collectors.joining("\\\""));
+		//System.err.println("src: "+src);
+		//System.err.println("rst: "+rst);
+		return rst;
+	}
+	
 	/**
 	 * TODO write JavaDoc comment.
 	 * 

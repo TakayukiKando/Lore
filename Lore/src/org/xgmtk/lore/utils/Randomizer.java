@@ -1,4 +1,4 @@
-package org.xgmtk.lore.types;
+package org.xgmtk.lore.utils;
 
 import java.util.Random;
 import java.util.Timer;

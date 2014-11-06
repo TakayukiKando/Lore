@@ -44,8 +44,8 @@ public class UnexpectedNodeException extends LoreASTException{
 	 * @param actualType
 	 */
 	public UnexpectedNodeException(Locator locator, Class<? extends AST> expectedNodeClass, ASTScannerEventType expectedType, 
-			Class<? extends AST> actualNodeClass, ASTScannerEventType actualType){
-		super(locator, "Expected event is [class: \""+expectedNodeClass.getSimpleName()+"\", type: "+expectedType+" ] but actual event is [class: \""+actualNodeClass.getSimpleName()+"\", type: "+actualType+" ]");
+			AST actualNode, ASTScannerEventType actualType){
+		super(locator, "Expected event is [class: \""+expectedNodeClass.getSimpleName()+"\", type: "+expectedType+" ] but actual event is [class: \""+actualNode.getClass().getSimpleName()+"\", symbol: \""+actualNode.symbol+"\", type: "+actualType+" ]");
 	}
 
 	/**

@@ -16,6 +16,8 @@
  */
 package org.xgmtk.lore.types;
 
+import org.xgmtk.lore.utils.Randomizer;
+
 /**
  * TODO write JavaDoc comment.
  * 

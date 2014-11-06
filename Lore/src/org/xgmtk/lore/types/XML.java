@@ -16,6 +16,7 @@
  */
 package org.xgmtk.lore.types;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import org.xgmtk.lore.ast.Locator;
@@ -48,5 +49,24 @@ public class XML extends StringContainer {
 	 */
 	public XML(String content, Locator baseLocator, Logger logger) {
 		super(content, baseLocator, logger);
+	}
+	
+	@Override
+	public boolean equals(Object o){
+		if(!(o instanceof SimpleString)){
+			return false;
+		}
+		SimpleString content = (SimpleString)o;
+		return this.getContent().equals(content.getContent());
+	}
+	
+	@Override
+	public int hashCode(){
+		return Objects.hash(this.getContent());
+	}
+	
+	@Override
+	public String toString(){
+		return this.getContent();
 	}
 }

@@ -38,6 +38,24 @@ public class Lore {
 
 	/**
 	 * TODO write JavaDoc comment.
+	 */
+	public static final URL DEFAULT_VERSION;
+	
+	static{
+		try {
+			DEFAULT_VERSION = new URL("http://xgmtk.org/lore/1.0");
+		} catch (MalformedURLException e) {
+			throw new IllegalStateException("Unexpected internal error.", e);
+		}
+	}
+	
+	/**
+	 * TODO write JavaDoc comment.
+	 */
+	public static final String DEFAULT_ENCODING = "UTF-8";
+	
+	/**
+	 * TODO write JavaDoc comment.
 	 * 
 	 * @param src
 	 * @param line

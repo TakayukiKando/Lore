@@ -1,4 +1,4 @@
-package org.xgmtk.lore.ast.test;
+package org.xgmtk.lore.utils.test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.xgmtk.lore.ast.EncodeFinder;
+import org.xgmtk.lore.utils.EncodeFinder;
 
 public class TestEncodeFinder {
 	private static Path wdir;

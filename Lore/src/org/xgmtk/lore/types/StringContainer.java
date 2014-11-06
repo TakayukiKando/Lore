@@ -52,7 +52,12 @@ public abstract class StringContainer {
 		return this.logger;
 	}
 	
-	public final void parse(Parser parser){
+	protected final void parse(Parser parser){
 		parser.parse(content, baseLocator, logger);
+	}
+	
+	@Override
+	public String toString(){
+		return this.getContent();
 	}
 }

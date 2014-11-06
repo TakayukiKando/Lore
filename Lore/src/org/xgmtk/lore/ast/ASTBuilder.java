@@ -19,8 +19,8 @@ package org.xgmtk.lore.ast;
 import static org.xgmtk.lore.ast.ASTNodes.id;
 import static org.xgmtk.lore.ast.ASTNodes.node;
 import static org.xgmtk.lore.ast.ASTNodes.lit;
-import static org.xgmtk.lore.ast.EncodeFinder.findEncodeInfo;
 import static org.xgmtk.lore.ast.Locator.loc;
+import static org.xgmtk.lore.utils.EncodeFinder.findEncodeInfo;
 import static org.xgmtk.lore.utils.StringUtils.trim;
 
 import java.io.FileNotFoundException;

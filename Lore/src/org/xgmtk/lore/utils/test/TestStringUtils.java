@@ -24,6 +24,12 @@ import org.xgmtk.lore.utils.StringUtils;
 
 public class TestStringUtils {
 	@Test
+	public void testEscape(){
+		assertThat(StringUtils.escape("abcd"), is("abcd"));
+		assertThat(StringUtils.escape("a\"bc\"d"), is("a\\\"bc\\\"d"));
+	}
+	
+	@Test
 	public void testTrim(){
 		String expected = "string 0";
 		String t0 = "\""+expected+"\"";
