@@ -24,7 +24,7 @@ import org.xgmtk.lore.Lore;
  * @author kando
  *
  */
-public class LoreASTException extends Exception {
+public class ASTException extends Exception {
 
 	/**
 	 * TODO write JavaDoc comment.
@@ -39,7 +39,7 @@ public class LoreASTException extends Exception {
 	 * @param locator
 	 * @param message
 	 */
-	public LoreASTException(Locator locator, String message) {
+	public ASTException(Locator locator, String message) {
 		super(Lore.errorMessageFormat(locator.file, locator.line, message));
 		this.locator = locator;
 	}
@@ -51,7 +51,7 @@ public class LoreASTException extends Exception {
 	 * @param message
 	 * @param t
 	 */
-	public LoreASTException(Locator locator, String message, Throwable t) {
+	public ASTException(Locator locator, String message, Throwable t) {
 		super(message, t);
 		this.locator = locator;
 	}

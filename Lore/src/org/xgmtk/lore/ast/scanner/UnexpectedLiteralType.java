@@ -19,7 +19,7 @@ package org.xgmtk.lore.ast.scanner;
 import java.util.Arrays;
 
 import org.xgmtk.lore.ast.Locator;
-import org.xgmtk.lore.ast.LoreASTException;
+import org.xgmtk.lore.ast.ASTException;
 
 /**
  * TODO write JavaDoc comment.
@@ -27,7 +27,7 @@ import org.xgmtk.lore.ast.LoreASTException;
  * @author kando
  *
  */
-public class UnexpectedLiteralType extends LoreASTException {
+public class UnexpectedLiteralType extends ASTException {
 
 	/**
 	 * TODO write JavaDoc comment.

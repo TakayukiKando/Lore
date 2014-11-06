@@ -18,7 +18,7 @@ package org.xgmtk.lore.ast.scanner;
 
 import org.xgmtk.lore.ast.AST;
 import org.xgmtk.lore.ast.Locator;
-import org.xgmtk.lore.ast.LoreASTException;
+import org.xgmtk.lore.ast.ASTException;
 import org.xgmtk.lore.ast.NodeType;
 
 /**
@@ -27,7 +27,7 @@ import org.xgmtk.lore.ast.NodeType;
  * @author kando
  *
  */
-public class UnexpectedNodeException extends LoreASTException{
+public class UnexpectedNodeException extends ASTException{
 
 	/**
 	 * 
