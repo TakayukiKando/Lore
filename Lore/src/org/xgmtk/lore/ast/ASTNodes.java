@@ -16,6 +16,8 @@
  */
 package org.xgmtk.lore.ast;
 
+import org.xgmtk.lore.symbols.builtin.BuiltinTypes;
+
 /**
  * 
  * @author kando
@@ -30,7 +32,7 @@ public class ASTNodes {
 	 * @param subtrees
 	 * @return
 	 */
-	public static AST node(NodeType symbol, Locator location, AST...subtrees){
+	public static AST node(NonTerminalSymbol symbol, Locator location, AST...subtrees){
 		AST ast = new AST(symbol, location, subtrees);
 		return ast;
 	}
@@ -54,6 +56,8 @@ public class ASTNodes {
 	 * @return
 	 */
 	public static <T> Literal<T> lit(T value, Locator location){
-		return new Literal<T>(value, location);
+		Literal<T> literal = new Literal<T>(value, location);
+		literal.setType(BuiltinTypes.findBuiltinType(value.getClass()).get());
+		return literal;
 	}
 }

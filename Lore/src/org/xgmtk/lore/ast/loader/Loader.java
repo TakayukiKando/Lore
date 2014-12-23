@@ -30,20 +30,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xgmtk.lore.ast.AST;
+import org.xgmtk.lore.ast.ASTException;
 import org.xgmtk.lore.ast.Literal;
-import org.xgmtk.lore.ast.NodeType;
+import org.xgmtk.lore.ast.NonTerminalSymbol;
 import org.xgmtk.lore.ast.PrintVisitor;
 import org.xgmtk.lore.ast.scanner.ASTScanner;
 import org.xgmtk.lore.ast.scanner.ASTScannerEventType;
-import org.xgmtk.lore.ast.scanner.UnexpectedLiteralType;
-import org.xgmtk.lore.ast.scanner.UnexpectedNodeException;
+import org.xgmtk.lore.ast.scanner.UnexpectedLiteralTypeException;
+import org.xgmtk.lore.builtin.HTML;
+import org.xgmtk.lore.builtin.JID;
+import org.xgmtk.lore.builtin.SimpleString;
+import org.xgmtk.lore.builtin.StringContainer;
 import org.xgmtk.lore.docinfo.Author;
 import org.xgmtk.lore.docinfo.DocInfo;
 import org.xgmtk.lore.docinfo.History;
-import org.xgmtk.lore.types.HTML;
-import org.xgmtk.lore.types.JID;
-import org.xgmtk.lore.types.SimpleString;
-import org.xgmtk.lore.types.StringContainer;
 
 /**
  * TODO write JavaDoc comment.
@@ -66,7 +66,7 @@ public class Loader{
 		
 		try {
 			loader.load(Paths.get(fname).toFile().toURI().toURL());
-		} catch (IOException | UnexpectedLiteralType e) {
+		} catch (IOException | UnexpectedLiteralTypeException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -88,7 +88,7 @@ public class Loader{
 	private Queue<URL> queue;
 	private Map<URL, DocInfo> infos;
 	private Map<URL, AST> asts;
-	private Logger logger;
+	protected final Logger logger;
 	private ASTScanner scanner;
 
 	/**
@@ -106,8 +106,8 @@ public class Loader{
 		this.scanner = new ASTScanner(logger);
 		
 		// version
-		this.scanner.putPartialScanner(NodeType.VERSION, (context, node)->{
-			context.require(NodeType.VERSION, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.VERSION, (context, node)->{
+			context.require(NonTerminalSymbol.VERSION, ASTScannerEventType.START);
 			context.next();
 			URL version = context.getLiteral(URL.class);
 			DocInfo info = infos.get(node.locator.file);
@@ -116,32 +116,32 @@ public class Loader{
 		});
 		
 		// encoding
-		this.scanner.putPartialScanner(NodeType.ENCODING, (context, node)->{
-			context.require(NodeType.ENCODING, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.ENCODING, (context, node)->{
+			context.require(NonTerminalSymbol.ENCODING, ASTScannerEventType.START);
 			context.next();
-			String encoding = context.getLiteral(String.class);
+			String encoding = context.getLiteral(SimpleString.class).getContent();
 			DocInfo info = infos.get(node.locator.file);
 			info.setEncoding(encoding);
 			context.skip(node);
 		});
 		
 		// desc (description)
-		this.scanner.putPartialScanner(NodeType.DESC, (context, node)->{
-			context.require(NodeType.DESC, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.DESC, (context, node)->{
+			context.require(NonTerminalSymbol.DESC, ASTScannerEventType.START);
 			context.next();
-			String title = context.getLiteral(String.class);
+			String title = context.getLiteral(SimpleString.class).getContent();
 			DocInfo info = infos.get(node.locator.file);
 			info.setTitle(title);
 			context.next();
 			if(context.isLiteralStart()){
 				Literal<?> descLit = context.getLiteral();
 				StringContainer desc = null;
-				if(descLit.value instanceof String){
-					desc = SimpleString.create((String)descLit.value, descLit.locator, logger);
+				if(descLit.value instanceof SimpleString){
+					desc = (SimpleString)descLit.value;
 				}else if(descLit.value instanceof HTML){
 					desc = (HTML)descLit.value;
 				}else{
-					throw new UnexpectedLiteralType(descLit.locator, descLit.value.getClass(), String.class, HTML.class);
+					throw new UnexpectedLiteralTypeException(descLit.locator, descLit.value.getClass(), String.class, HTML.class);
 				}
 				info.setDescription(desc);
 			}
@@ -149,10 +149,10 @@ public class Loader{
 		});
 		
 		//authors
-		this.scanner.putPartialScanner(NodeType.AUTHOR, (context, node)->{
-			context.require(NodeType.AUTHOR, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.AUTHOR, (context, node)->{
+			context.require(NonTerminalSymbol.AUTHOR, ASTScannerEventType.START);
 			context.next();
-			String name = context.getLiteral(String.class);
+			String name = context.getLiteral(SimpleString.class).getContent();
 			DocInfo info = infos.get(node.locator.file);
 			Author author = new Author(name);
 			context.next();
@@ -163,7 +163,7 @@ public class Loader{
 				}else if(contactLit.value instanceof URL){
 					author.addContact((URL)contactLit.value);
 				}else{
-					throw new UnexpectedLiteralType(contactLit.locator, contactLit.value.getClass(), JID.class, URL.class);
+					throw new UnexpectedLiteralTypeException(contactLit.locator, contactLit.value.getClass(), JID.class, URL.class);
 				}
 				context.next();
 			}
@@ -172,14 +172,14 @@ public class Loader{
 		});
 		
 		//histories
-		this.scanner.putPartialScanner(NodeType.HISTORY, (context, node)->{
-			context.require(NodeType.HISTORY, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.HISTORY, (context, node)->{
+			context.require(NonTerminalSymbol.HISTORY, ASTScannerEventType.START);
 			context.next();
 			OffsetDateTime date = context.getLiteral(OffsetDateTime.class);
 			context.next();
-			String reviser = context.getLiteral(String.class);
+			String reviser = context.getLiteral(SimpleString.class).getContent();
 			context.next();
-			String desc = context.getLiteral(String.class);
+			String desc = context.getLiteral(SimpleString.class).getContent();
 			DocInfo info = infos.get(node.locator.file);
 			History history = new History(date, reviser, desc);
 			info.addHistory(history);
@@ -187,8 +187,8 @@ public class Loader{
 		});
 		
 		//import
-		this.scanner.putPartialScanner(NodeType.IMPORT, (context, node)->{
-			context.require(NodeType.IMPORT, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.IMPORT, (context, node)->{
+			context.require(NonTerminalSymbol.IMPORT, ASTScannerEventType.START);
 			context.next();
 			addSource(context.getLiteral(URL.class));
 			context.ｌeaveNode(node);
@@ -228,9 +228,9 @@ public class Loader{
 	 * @param source 
 	 * 
 	 * @throws IOException
-	 * @throws UnexpectedLiteralType 
+	 * @throws UnexpectedLiteralTypeException 
 	 */
-	public void load(URL source) throws IOException, UnexpectedLiteralType {
+	public void load(URL source) throws IOException, UnexpectedLiteralTypeException {
 		this.queue.add(source);
 		for(;;){
 			URL src = this.nextSource();
@@ -246,7 +246,7 @@ public class Loader{
 			this.infos.put(src, new DocInfo(src));
 			try {
 				this.scanner.scan(ast);
-			} catch (UnexpectedNodeException e) {
+			} catch (ASTException e) {
 				String msg = "Invalid AST.";
 				this.logger.log(Level.SEVERE, msg, e);
 				throw new IllegalStateException(msg, e);

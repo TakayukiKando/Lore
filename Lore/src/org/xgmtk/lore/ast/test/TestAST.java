@@ -23,6 +23,8 @@ import static org.junit.Assert.assertThat;
 import static org.xgmtk.lore.ast.test.ASTMatchers.equalAST;
 
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.logging.Logger;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,8 +33,9 @@ import org.xgmtk.lore.ast.ASTNodes;
 import org.xgmtk.lore.ast.ASTVisitor;
 import org.xgmtk.lore.ast.ID;
 import org.xgmtk.lore.ast.Literal;
-import org.xgmtk.lore.ast.NodeType;
+import org.xgmtk.lore.ast.NonTerminalSymbol;
 import org.xgmtk.lore.ast.Locator;
+import org.xgmtk.lore.builtin.SimpleString;
 
 /**
  * 
@@ -46,8 +49,8 @@ public class TestAST {
 	private static AST abcde;
 
 	private static AST node(String name, AST... subtrees){
-		NodeType t = NodeType.getSymbol(name);
-		if(t == null){
+		Optional<NonTerminalSymbol> ot = NonTerminalSymbol.getSymbol(name);
+		if(!ot.isPresent()){
 			if(subtrees.length != 0){
 				throw new IllegalArgumentException("ID and Literal should not have children.");
 			}
@@ -56,10 +59,10 @@ public class TestAST {
 				return ASTNodes.id(name, Locator.NOWHERE);
 			}
 			//System.err.println("create Literal node \""+name+"\"");
-			return ASTNodes.lit(name, Locator.NOWHERE);
+			return ASTNodes.lit(new SimpleString(name, Locator.NOWHERE, Logger.getGlobal()), Locator.NOWHERE);
 		}
 		//System.err.println("create normal AST node \""+name+"\"");
-		return ASTNodes.node(t, Locator.NOWHERE, subtrees);
+		return ASTNodes.node(ot.get(), Locator.NOWHERE, subtrees);
 	}
 	
 	@BeforeClass
@@ -135,6 +138,10 @@ public class TestAST {
 	@Test
 	public void testClone(){
 		AST clone = abcd.clone();
+//		System.err.println("abcd:");
+//		PrintVisitor.printTree(abcd, System.err, false);
+//		System.err.println("abcd clone:");
+//		PrintVisitor.printTree(clone, System.err, false);
 		assertThat(clone, equalAST(abcd));
 		Iterator<AST> itExpected = abcd.iterator();
 		Iterator<AST> itClone = clone.iterator();

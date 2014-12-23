@@ -39,7 +39,7 @@ vLambdas = ({
 	l0 = @ x:real->real x*x;
 	l1 = @(a:real, b:real)->real {result=a*b;};
 	l3 = @ -> real 1.0;
-	l4 = @(a:real, b:real) {message(a+b);};
+	l4 = @(a:real, b:real) {c=a+b; message(c);};
 	l5 = @ x:real {message(x);};
 	l6 = @{main;};
 }: LambdaSample);

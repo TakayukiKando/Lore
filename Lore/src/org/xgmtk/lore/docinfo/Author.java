@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.xgmtk.lore.types.JID;
+import org.xgmtk.lore.builtin.JID;
 import org.xgmtk.lore.utils.StringUtils;
 
 /**

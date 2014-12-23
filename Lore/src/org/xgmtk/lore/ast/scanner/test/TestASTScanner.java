@@ -37,10 +37,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.xgmtk.lore.ast.AST;
-import org.xgmtk.lore.ast.NodeType;
+import org.xgmtk.lore.ast.ASTException;
+import org.xgmtk.lore.ast.NonTerminalSymbol;
 import org.xgmtk.lore.ast.scanner.ASTScanner;
 import org.xgmtk.lore.ast.scanner.ASTScannerEventType;
-import org.xgmtk.lore.ast.scanner.UnexpectedLiteralType;
 import org.xgmtk.lore.ast.scanner.UnexpectedNodeException;
 import org.xgmtk.lore.utils.SystemErrorHandler;
 
@@ -76,12 +76,12 @@ public class TestASTScanner {
 	}
 	
 	@Test
-	public void testVisitImport() throws UnexpectedNodeException, UnexpectedLiteralType, MalformedURLException{
+	public void testVisitImport() throws MalformedURLException, ASTException{
 		final List<URL> literals = new ArrayList<>();
 //		PrintVisitor.printTree(this.ast, 
 //				new PrintWriter(new FileOutputStream(dir.resolve("lambda.lore.ast.txt").toFile())), true);
-		this.scanner.putPartialScanner(NodeType.IMPORT, (context, node)->{
-			context.require(NodeType.IMPORT, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.IMPORT, (context, node)->{
+			context.require(NonTerminalSymbol.IMPORT, ASTScannerEventType.START);
 			context.next();
 			if(context.isIDStart()){
 				fail();
@@ -99,17 +99,17 @@ public class TestASTScanner {
 	}
 	
 	@Test
-		public void testVisitImportAndRequireErrorNodeSymbolAndEventType() throws UnexpectedLiteralType{
+		public void testVisitImportAndRequireErrorNodeSymbolAndEventType() throws ASTException {
 	//		PrintVisitor.printTree(this.ast, 
 	//				new PrintWriter(new FileOutputStream(dir.resolve("lambda.lore.ast.txt").toFile())), true);
-			this.scanner.putPartialScanner(NodeType.IMPORT, (context, node)->{
+			this.scanner.putPartialScanner(NonTerminalSymbol.IMPORT, (context, node)->{
 				if(context.isIDStart()){
 					fail();
 				}
 				if(context.isLiteralStart()){
 					fail();
 				}
-				context.require(NodeType.AUTHOR, ASTScannerEventType.END);
+				context.require(NonTerminalSymbol.AUTHOR, ASTScannerEventType.END);
 				context.skip(node);
 			});
 			
@@ -122,11 +122,11 @@ public class TestASTScanner {
 		}
 
 	@Test
-	public void testVisitImportAndRequireErrorNodeSymbol() throws UnexpectedLiteralType{
+	public void testVisitImportAndRequireErrorNodeSymbol() throws ASTException{
 //		PrintVisitor.printTree(this.ast, 
 //				new PrintWriter(new FileOutputStream(dir.resolve("lambda.lore.ast.txt").toFile())), true);
-		this.scanner.putPartialScanner(NodeType.IMPORT, (context, node)->{
-			context.require(NodeType.AUTHOR, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.IMPORT, (context, node)->{
+			context.require(NonTerminalSymbol.AUTHOR, ASTScannerEventType.START);
 			context.skip(node);
 		});
 		
@@ -139,11 +139,11 @@ public class TestASTScanner {
 	}
 	
 	@Test
-	public void testVisitImportAndRequireErrorEventType() throws UnexpectedLiteralType{
+	public void testVisitImportAndRequireErrorEventType() throws ASTException{
 //		PrintVisitor.printTree(this.ast, 
 //				new PrintWriter(new FileOutputStream(dir.resolve("lambda.lore.ast.txt").toFile())), true);
-		this.scanner.putPartialScanner(NodeType.IMPORT, (context, node)->{
-			context.require(NodeType.IMPORT, ASTScannerEventType.END);
+		this.scanner.putPartialScanner(NonTerminalSymbol.IMPORT, (context, node)->{
+			context.require(NonTerminalSymbol.IMPORT, ASTScannerEventType.END);
 			context.skip(node);
 		});
 		
@@ -156,13 +156,13 @@ public class TestASTScanner {
 	}
 	
 	@Test
-	public void testVisitFormAndTypeSpec() throws UnexpectedNodeException, UnexpectedLiteralType{
+	public void testVisitFormAndTypeSpec() throws ASTException{
 		final List<String> formDefIds = new ArrayList<>();
 		final List<String> typeSpecIds = new ArrayList<>();
 //		PrintVisitor.printTree(this.ast, 
 //				new PrintWriter(new FileOutputStream(dir.resolve("lambda.lore.ast.txt").toFile())), true);
-		this.scanner.putPartialScanner(NodeType.FORM_DEF, (context, node)->{
-			context.require(NodeType.FORM_DEF, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.FORM_DEF, (context, node)->{
+			context.require(NonTerminalSymbol.FORM_DEF, ASTScannerEventType.START);
 			context.next();
 			if(!context.isIDStart()){
 				fail();
@@ -173,8 +173,8 @@ public class TestASTScanner {
 			formDefIds.add(context.getID().id);
 			context.skip(node);
 		});
-		this.scanner.putPartialScanner(NodeType.TYPE_SPEC, (context, node)->{
-			context.require(NodeType.TYPE_SPEC, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.TYPE_SPEC, (context, node)->{
+			context.require(NonTerminalSymbol.TYPE_SPEC, ASTScannerEventType.START);
 			context.next();
 			if(!context.isIDStart()){
 				fail();
@@ -196,14 +196,14 @@ public class TestASTScanner {
 		assertThat(typeSpecIds, is(Arrays.asList("items", "encCalc", "enc", "find", "name", "it", "l0", "l1", "l3", "l4", "l5", "l6", "x", "x", "a", "b", "a", "b", "x")));
 	}
 	@Test
-	public void testVisitFormAndeDelegateTypeSpec() throws UnexpectedNodeException, UnexpectedLiteralType{
+	public void testVisitFormAndeDelegateTypeSpec() throws ASTException{
 		final List<String> formDefIds = new ArrayList<>();
 		final List<String> formTypeSpecIds = new ArrayList<>();
 		final List<String> argTypeSpecIds = new ArrayList<>();
 //		PrintVisitor.printTree(this.ast, 
 //				new PrintWriter(new FileOutputStream(dir.resolve("lambda.lore.ast.txt").toFile())), true);
-		this.scanner.putPartialScanner(NodeType.FORM_DEF, (context, node)->{
-			context.require(NodeType.FORM_DEF, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.FORM_DEF, (context, node)->{
+			context.require(NonTerminalSymbol.FORM_DEF, ASTScannerEventType.START);
 			context.next();
 			if(!context.isIDStart()){
 				fail();
@@ -213,14 +213,14 @@ public class TestASTScanner {
 			}
 			formDefIds.add(context.getID().id);
 			context.next();
-			context.require(NodeType.CONT, ASTScannerEventType.START);
+			context.require(NonTerminalSymbol.CONT, ASTScannerEventType.START);
 			for(;;){
 				context.next();
-				if(!context.isNode(NodeType.TYPE_SPEC, ASTScannerEventType.START)){
+				if(!context.isNode(NonTerminalSymbol.TYPE_SPEC, ASTScannerEventType.START)){
 					break;
 				}
 				context.delegate(context.lastNode(), (cx, n)->{
-					cx.require(NodeType.TYPE_SPEC, ASTScannerEventType.START);
+					cx.require(NonTerminalSymbol.TYPE_SPEC, ASTScannerEventType.START);
 					cx.next();
 					formTypeSpecIds.add(cx.getID().id);
 					cx.skip(n);
@@ -228,8 +228,8 @@ public class TestASTScanner {
 			}
 			context.skip(node);
 		});
-		this.scanner.putPartialScanner(NodeType.TYPE_SPEC, (context, node)->{
-			context.require(NodeType.TYPE_SPEC, ASTScannerEventType.START);
+		this.scanner.putPartialScanner(NonTerminalSymbol.TYPE_SPEC, (context, node)->{
+			context.require(NonTerminalSymbol.TYPE_SPEC, ASTScannerEventType.START);
 			context.next();
 			if(!context.isIDStart()){
 				fail();

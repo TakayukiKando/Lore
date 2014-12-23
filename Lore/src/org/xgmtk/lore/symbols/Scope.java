@@ -17,17 +17,20 @@
 package org.xgmtk.lore.symbols;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Stack;
 import java.util.logging.Logger;
+
+import org.xgmtk.lore.ast.scanner.UnexpectedLiteralTypeException;
 
 /**
  * TODO write JavaDoc comment.
@@ -35,11 +38,12 @@ import java.util.logging.Logger;
  * @author kando
  *
  */
-public abstract class Scope implements Iterable<Scope> {
-	public static Scope build(Path src, Logger logger) throws IOException {
-		ScopeBuilder builder = new ScopeBuilder(logger, src);
-		builder.build();
-		return builder.getRoot();
+public abstract class Scope {
+	private static final String INDENT = "  ";
+
+	public static Scope build(URL src, Logger logger) throws IOException, UnexpectedLiteralTypeException {
+		ScopeBuilder builder = new ScopeBuilder(logger);
+		return builder.build(src);
 	}
 
 	/**
@@ -48,91 +52,14 @@ public abstract class Scope implements Iterable<Scope> {
 	 * @author kando
 	 *
 	 */
-	public static class AlreadyDefinedException extends Exception {
-
+	public static class AlreadyDefinedSymbolException extends Exception{
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
-
-	}
-
-	/**
-	 * TODO write JavaDoc comment.
-	 * 
-	 * @author kando
-	 *
-	 */
-	public static class ScopeIterator implements Iterator<Scope>{
-		private static class Record{
-			public final Scope tree;
-			public int subtreeIndex;
-			
-			public Record(Scope tree){
-				super();
-				this.tree = tree;
-				this.subtreeIndex = 0;
-			}
-		}
 		
-		private Stack<Record> stack;
-		private Record current;
-		private boolean first;
-		private boolean last;
-	
-		private ScopeIterator(Scope root){
-			this.stack = new Stack<>();
-			this.current = new Record(root);
-		}
-		
-		@Override
-		public boolean hasNext() {
-			return this.current != null;
-		}
-	
-		private final boolean hasNextChild() {
-			return current.subtreeIndex < current.tree.getSubScopes().size();
-		}
-	
-		@Override
-		public Scope next() {
-			Scope r = current.tree;
-			this.first = (current.subtreeIndex == 0);
-			this.last = (current.subtreeIndex == current.tree.getSubScopes().size());
-			if(hasNextChild()){
-				Record rec = new Record(current.tree.getSubScopes().get(current.subtreeIndex));
-				++current.subtreeIndex;
-				stack.push(current);
-				current = rec;
-			}else{
-				if(stack.isEmpty()){
-					this.current = null;
-				}else{
-					current = stack.pop();
-				}
-			}
-			return r;
-		}
-	
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException("A node of Scope Tree should not be removed.");
-		}
-	
-		/**
-		 * This node, which is returned from the last invocation of the method, is the first time visited?
-		 * @return
-		 */
-		public boolean firstVisited() {
-			return this.first;
-		}
-	
-		/**
-		 * This node, which is returned from the last invocation of the method, will be visited no more?
-		 * @return
-		 */
-		public boolean lastVisited() {
-			return this.last;
+		public AlreadyDefinedSymbolException(String duplicatedName){
+			super("\""+duplicatedName+"\" is already defined.");
 		}
 	}
 
@@ -147,7 +74,7 @@ public abstract class Scope implements Iterable<Scope> {
 	 */
 	protected Scope(){
 		this.nestScope = null;
-		this.table = new HashMap<>();
+		this.table = new LinkedHashMap<>();
 		this.subScopes = new ArrayList<>();
 	}
 	
@@ -178,11 +105,6 @@ public abstract class Scope implements Iterable<Scope> {
 		return Collections.unmodifiableList(this.subScopes);
 	}
 
-	@Override
-	public final ScopeIterator iterator() {
-		return new ScopeIterator(this);
-	}
-
 	/**
 	 * TODO write JavaDoc comment.
 	 * 
@@ -198,7 +120,7 @@ public abstract class Scope implements Iterable<Scope> {
 	 * @param symbols
 	 * @throws AlreadyDefinedException
 	 */
-	public final void defineAll(Symbol...symbols) throws AlreadyDefinedException{
+	public final void defineAll(Symbol...symbols) throws AlreadyDefinedSymbolException{
 		for(Symbol s : symbols){
 			this.define(s);
 		}
@@ -208,29 +130,40 @@ public abstract class Scope implements Iterable<Scope> {
 	 * TODO write JavaDoc comment.
 	 * 
 	 * @param symbol
-	 * @throws AlreadyDefinedException
+	 * @throws AlreadyDefinedSymbolException
 	 */
-	public final void define(Symbol symbol) throws AlreadyDefinedException{
+	public final void defineWithoutPutScope(Symbol symbol)
+			throws AlreadyDefinedSymbolException {
 		Objects.requireNonNull(symbol, "A symbol should not be null.");
 		if(isDefined(symbol)){
-			throw new AlreadyDefinedException();
+			throw new AlreadyDefinedSymbolException(symbol.getName());
 		}
 		this.table.put(symbol.getName(), symbol);
+	}
+
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param symbol
+	 * @throws AlreadyDefinedException
+	 */
+	public final void define(Symbol symbol) throws AlreadyDefinedSymbolException{
+		defineWithoutPutScope(symbol);
 		if(symbol instanceof Scope){
 			this.put((Scope)symbol);
 		}
 	}
-	
+
 	/**
 	 * TODO write JavaDoc comment.
 	 * 
 	 * @param scope
 	 * @throws AlreadyDefinedException
 	 */
-	public final void put(Scope scope) throws AlreadyDefinedException{
+	public final void put(Scope scope) throws AlreadyDefinedSymbolException{
 		Objects.requireNonNull(scope, "A scope should not be null.");
 		if(this.subScopes.contains(scope)){
-			throw new AlreadyDefinedException();
+			throw new AlreadyDefinedSymbolException("(no named scope)");
 		}
 		this.subScopes.add(scope);
 		scope.setParent(this);
@@ -300,12 +233,71 @@ public abstract class Scope implements Iterable<Scope> {
 	public final Map<String,Symbol> getSymbolTable(){
 		return Collections.unmodifiableMap(this.table);
 	}
-
-	void enter(ScopeTreeVisitor astVisitor) {
-		astVisitor.enter(this);
+	
+	private static String indent(int depth){
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < depth; ++i){
+			sb.append(INDENT);
+		}
+		return sb.toString();
+	}
+	
+	private final void printSymbols(PrintWriter out, int depth) {
+		String indent = indent(depth);
+		List<String> list = new ArrayList<>(this.getSymbolTable().keySet());
+//		Collections.sort(list);
+		for(String k : list){
+			Symbol sym = this.resolveLocal(k).get();
+			out.println(indent+sym.getDescription());
+		}
 	}
 
-	void exit(ScopeTreeVisitor astVisitor) {
-		astVisitor.exit(this);
+	private final void dump(PrintWriter out, int depth){
+		//out.print("<indent="+depth+">");
+		String indent = indent(depth);
+		out.print(indent);
+		if(this instanceof Symbol){
+			out.print(((Symbol)this).getDescription());
+		}
+		out.println("{");
+		out.println(indent+"//Symbols");
+		printSymbols(out, depth+1);
+		out.println(indent+"//Sub-scopes");
+		for(Scope scope: this.getSubScopes()){
+			scope.dump(out, depth+1);
+		}
+		out.println(indent+"}");
+	}
+
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param out
+	 */
+	public final void dump(PrintWriter out){
+		//out.println("dump(PrintWriter out)");
+		dump(out, 0);
+		out.flush();
+	}
+	
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param out
+	 */
+	public final void dump(PrintStream out){
+		//out.println("dump(PrintStream out)");
+		dump(new PrintWriter(new OutputStreamWriter(out)), 0);
+		out.flush();
+	}
+	
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @return
+	 */
+	public String getScopeDescription() {
+		String description = this.getParent().isPresent()? this.getParent().get().getScopeDescription(): "[This scope is root]";
+		return "[class: \""+this.getClass().getSimpleName()+"\", parent: "+description+"]";
 	}
 }

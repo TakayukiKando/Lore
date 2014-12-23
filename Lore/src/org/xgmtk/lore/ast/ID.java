@@ -29,7 +29,7 @@ public class ID extends AST {
 	 * @param subtrees
 	 */
 	public ID(String id, Locator location){
-		super(NodeType.ID, location);
+		super(NonTerminalSymbol.ID, location);
 		Objects.requireNonNull(id, "A value should not be null.");
 		this.id = id;
 	}
@@ -47,7 +47,9 @@ public class ID extends AST {
 
 	@Override
 	public ID clone() {
-		return new ID(this.id, this.locator);
+		ID idNew = new ID(this.id, this.locator);
+		idNew.setType(this.getType());
+		return idNew;
 	}
 	
 	@Override

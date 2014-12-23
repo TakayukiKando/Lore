@@ -32,6 +32,7 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import org.junit.Before;
@@ -40,12 +41,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.xgmtk.lore.ast.AST;
-import org.xgmtk.lore.ast.NodeType;
+import org.xgmtk.lore.ast.NonTerminalSymbol;
 import org.xgmtk.lore.ast.Locator;
 import org.xgmtk.lore.ast.PrintVisitor;
-import org.xgmtk.lore.types.Location;
+import org.xgmtk.lore.builtin.Location;
+import org.xgmtk.lore.builtin.SimpleString;
 
-import static org.xgmtk.lore.ast.NodeType.*;
+import static org.xgmtk.lore.ast.NonTerminalSymbol.*;
 
 /**
  * Use antlr-4.1-complete.jar
@@ -105,23 +107,37 @@ public class TestASTBuilder {
 		assertThat(actualTree, equalASTWithoutLocator(expectedTree));
 	}
 	
-	private static AST nd(NodeType symbol, AST... subtrees){
+	private static AST nd(NonTerminalSymbol symbol, AST... subtrees){
 		return node(symbol, Locator.NOWHERE, subtrees);
 	}
 	
 	private static AST nd(String symbol, AST... subtrees){
-		NodeType foundSymbol = NodeType.getSymbol(symbol);
-		if(foundSymbol == null){
+		Optional<NonTerminalSymbol> oFoundSymbol = NonTerminalSymbol.getSymbol(symbol);
+		if(!oFoundSymbol.isPresent()){
 			if(subtrees.length != 0){
 				throw new IllegalArgumentException("ID node\""+symbol+"\" should not have children.");
 			}
 			return id(symbol, Locator.NOWHERE);
 		}
-		return nd(foundSymbol, subtrees);
+		return nd(oFoundSymbol.get(), subtrees);
 	}
 	
-	private static <T> AST lt(T value){
+	private <T> AST lt(T value){
+		if(value instanceof String){
+			return lit(new SimpleString((String)value,Locator.NOWHERE, logger), Locator.NOWHERE);
+		}else if(value instanceof Integer){
+			return lit(((Integer)value).longValue(), Locator.NOWHERE);
+		}
 		return lit(value, Locator.NOWHERE);
+	}
+	
+	private <T> AST lt(T value, Locator loc){
+		if(value instanceof String){
+			return lit(new SimpleString((String)value,loc, logger), Locator.NOWHERE);
+		}else if(value instanceof Integer){
+			return lit(((Integer)value).longValue(), loc);
+		}
+		return lit(value, loc);
 	}
 	
 	@Test
@@ -599,7 +615,7 @@ public class TestASTBuilder {
 					nd(RESULT, nd("!", nd(CALL, nd(QNAME, nd("hp_range"), nd("match")), nd("current"))))
 				)),
 				nd(ALTER, nd("damage"), nd(TYPE_SPEC, nd("damages"), nd(LIST_TYPE, nd("integer"))), nd(BODY,
-					nd(VAR, nd("current"), nd("-", nd("current"), nd(QNAME, nd("damages"), nd("sum"))))
+					nd(MODIFY, nd("current"), nd("-", nd("current"), nd(QNAME, nd("damages"), nd("sum"))))
 				))
 			)),
 
@@ -798,7 +814,10 @@ public class TestASTBuilder {
 //					l4 = @(a:real, b:real){message(a+b);};
 					nd(VAR, nd("l4"), nd(LAMBDA, 
 							nd(PARAMS, nd(TYPE_SPEC, nd("a"), nd("real")), nd(TYPE_SPEC, nd("b"), nd("real"))), 
-							nd(BODY, nd(CALL, nd("message"), nd("+", nd("a"), nd("b")))))),
+							nd(BODY, 
+								nd(VAR, nd("c"), nd("+", nd("a"), nd("b"))),
+								nd(CALL, nd("message"), nd("c"))
+							))),
 //					l5 = @ x:real {message(x);};
 					nd(VAR, nd("l5"), nd(LAMBDA, 
 							nd(PARAMS, nd(TYPE_SPEC, nd("x"), nd("real"))), 
@@ -840,31 +859,37 @@ public class TestASTBuilder {
 			),
 
 //			function selection(items: list<Item>, name: string): Hands{
-			nd(FUNCTION, nd(TYPE_SPEC, nd("selection"), nd("Hands")),
+			nd(FUNCTION, nd(TYPE_SPEC, nd("selection0"), nd("Hands")),
 				nd(PARAMS,
 				nd(TYPE_SPEC, nd("items"), nd(LIST_TYPE, nd("Item"))), nd(TYPE_SPEC, nd("name"), nd("string"))
 				),
 				nd(BODY,
 //					result = select(items.get(0).name){
 //						case ("dagger"){
-//							result = Hands._1H;
+//							a = Hands._1H;
+//							result = a;
 //						}
 //						case ("claymore"){
-//							result = Hands._2H;
+//							a = Hands._2H;
+//							result = a;
 //						}
 //						default {
-//							result = Hands.Sheild;
+//							a = Hands.Sheild;
+//							result = a;
 //						}
 //					};
 					nd(RESULT,nd(SELECT, nd(QNAME, nd(CALL, nd(QNAME, nd("items"), nd("get")), lt(0)), nd("name")),
 						nd(CASE, lt("dagger"), nd(BODY, 
-							nd(RESULT, nd(QNAME, nd("Hands"), nd("_1H")))
+							nd(VAR, nd("a"), nd(QNAME, nd("Hands"), nd("_1H"))),
+							nd(RESULT, nd("a"))
 						)),
 						nd(CASE, lt("claymore"), nd(BODY, 
-							nd(RESULT, nd(QNAME, nd("Hands"), nd("_2H")))
+							nd(VAR, nd("a"), nd(QNAME, nd("Hands"), nd("_2H"))),
+							nd(RESULT, nd("a"))
 						)),
 						nd(DEFAULT, nd(BODY, 
-							nd(RESULT, nd(QNAME, nd("Hands"), nd("Sheild")))
+							nd(VAR, nd("a"), nd(QNAME, nd("Hands"), nd("Sheild"))),
+							nd(RESULT, nd("a"))
 						))
 					))
 				)
@@ -872,7 +897,7 @@ public class TestASTBuilder {
 			),//function selection
 //
 //			rule selection(owner : Actor, items: list<Item>, name: string){
-			nd(RULE, nd("selection"), nd(PARAMS,
+			nd(RULE, nd("selection1"), nd(PARAMS,
 					nd(TYPE_SPEC, nd("owner"), nd("Actor")), 
 					nd(TYPE_SPEC, nd("items"), nd(LIST_TYPE, nd("Item"))),
 					nd(TYPE_SPEC, nd("name"), nd("string"))),nd(BODY, 
@@ -889,13 +914,16 @@ public class TestASTBuilder {
 //				}
 					nd(SELECT, nd(QNAME, nd(CALL, nd(QNAME, nd("items"), nd("get")), lt(0)), nd("name")),
 						nd(CASE, lt("dagger"), nd(BODY, 
-							nd(CALL, nd(QNAME, nd("owner"), nd("message")), nd(QNAME, nd("Hands"), nd("_1H")))
+							nd(VAR, nd("msg"), nd(QNAME, nd("Hands"), nd("_1H"))),
+							nd(CALL, nd(QNAME, nd("owner"), nd("message")), nd("msg"))
 						)),
 						nd(CASE, lt("claymore"), nd(BODY, 
-							nd(CALL, nd(QNAME, nd("owner"), nd("message")), nd(QNAME, nd("Hands"), nd("_2H")))
+							nd(VAR, nd("msg"), nd(QNAME, nd("Hands"), nd("_2H"))),
+							nd(CALL, nd(QNAME, nd("owner"), nd("message")), nd("msg"))
 						)),
 						nd(DEFAULT, nd(BODY, 
-							nd(CALL, nd(QNAME, nd("owner"), nd("message")), nd(QNAME, nd("Hands"), nd("Sheild")))
+							nd(VAR, nd("msg"), nd(QNAME, nd("Hands"), nd("Sheild"))),
+							nd(CALL, nd(QNAME, nd("owner"), nd("message")), nd("msg"))
 						))
 					)
 //			}
@@ -922,13 +950,16 @@ public class TestASTBuilder {
 				nd(ACCESSOR, nd(TYPE_SPEC, nd("get0Name"), nd("string")), nd(PARAMS), nd(BODY,
 					nd(RESULT, nd(SELECT, nd(CALL, nd(QNAME, nd("items"), nd("get")), lt(0)),
 						nd(AS, nd(TYPE_SPEC, nd("x"), nd("Dagger")), nd(BODY,
-							nd(RESULT, nd(QNAME, nd(QNAME, nd("x"), nd("type")), nd("name")))
+							nd(VAR, nd("y"), nd("x")),
+							nd(RESULT, nd(QNAME, nd(QNAME, nd("y"), nd("type")), nd("name")))
 						)),
 						nd(AS, nd(TYPE_SPEC, nd("x"), nd("Claymore")), nd(BODY,
-								nd(RESULT, nd(QNAME, nd(QNAME, nd("x"), nd("type")), nd("name")))
+							nd(VAR, nd("y"), nd("x")),
+							nd(RESULT, nd(QNAME, nd(QNAME, nd("y"), nd("type")), nd("name")))
 						)),
 						nd(DEFAULT, nd(BODY,
-							nd(RESULT, lt("unknown"))
+							nd(VAR, nd("x"), lt("unknown")),
+							nd(RESULT, nd("x"))
 						))
 					))
 				)),
@@ -955,15 +986,18 @@ public class TestASTBuilder {
 //						}
 						nd(SELECT, nd(CALL, nd(QNAME, nd("items"), nd("get")), nd("index")),
 							nd(AS, nd(TYPE_SPEC, nd("x"), nd("Dagger")), nd(BODY,
-								nd(CALL, nd(QNAME, nd("owner"), nd("message")), nd(QNAME, nd(QNAME, nd("x"), nd("type")), nd("name"))),
-								nd(CALL, nd(QNAME, nd("owner"), nd("equip")), nd("x"))
+								nd(VAR, nd("y"), nd("x")),
+								nd(CALL, nd(QNAME, nd("owner"), nd("message")), nd(QNAME, nd(QNAME, nd("y"), nd("type")), nd("name"))),
+								nd(CALL, nd(QNAME, nd("owner"), nd("equip")), nd("y"))
 							)),
 							nd(AS, nd(TYPE_SPEC, nd("x"), nd("Claymore")), nd(BODY,
-								nd(CALL, nd(QNAME, nd("owner"), nd("message")), nd(QNAME, nd(QNAME, nd("x"), nd("type")), nd("name"))),
-								nd(CALL, nd(QNAME, nd("owner"), nd("equip")), nd("x"))
+								nd(VAR, nd("y"), nd("x")),
+								nd(CALL, nd(QNAME, nd("owner"), nd("message")), nd(QNAME, nd(QNAME, nd("y"), nd("type")), nd("name"))),
+								nd(CALL, nd(QNAME, nd("owner"), nd("equip")), nd("y"))
 							)),
 							nd(DEFAULT, nd(BODY,
-								nd(CALL, nd(QNAME, nd("owner"), nd("message")), lt("unknown"))
+								nd(VAR, nd("x"), lt("unknown")),
+								nd(CALL, nd(QNAME, nd("owner"), nd("message")), nd("x"))
 							))
 						)
 //					});
@@ -987,25 +1021,25 @@ public class TestASTBuilder {
 //			docinfo{encoding="UTF-8", version="http://xgmtk.org/lore/1.0":url}
 			node(DOCINFO, loc(src, 1),
 				node(ENCODING, loc(src, 1),
-					lit("UTF-8", loc(src, 1))),
+					lt("UTF-8", loc(src, 1))),
 				node(VERSION, loc(src, 1),
-					lit(new URL("http://xgmtk.org/lore/1.0"), loc(src, 1)))),
+					lt(new URL("http://xgmtk.org/lore/1.0"), loc(src, 1)))),
 
 //			desc("Hello World"){[=["Hello World"
 //			Hello Worldを表示するだけのサンプル。
 //			]=]}
 			node(DESC, loc(src, 2),
-				lit("Hello World", loc(src, 2)),
-				lit("\"Hello World\""+NEWLINE+"Hello Worldを表示するだけのサンプル。"+NEWLINE, loc(src, 2))),
+				lt("Hello World", loc(src, 2)),
+				lt("\"Hello World\""+NEWLINE+"Hello Worldを表示するだけのサンプル。"+NEWLINE, loc(src, 2))),
 				
 //			author("椎路 ちひろ"){'mailto:develop@xgmtk.org':url}
 			node(AUTHOR, loc(src, 3),
-				lit("椎路 ちひろ", loc(src, 3)),
-				lit(new URL("mailto:develop@xgmtk.org"), loc(src, 3))),
+				lt("椎路 ちひろ", loc(src, 3)),
+				lt(new URL("mailto:develop@xgmtk.org"), loc(src, 3))),
 
 //			import "basic.lore":url;
 			node(IMPORT, loc(src, 6),
-				lit(dir.getParent().resolve("basic.lore").toUri().toURL(), loc(src, 6))),
+				lt(dir.getParent().resolve("basic.lore").toUri().toURL(), loc(src, 6))),
 
 //			section hello.world{
 			node(SECTION, loc(src, 8),
@@ -1024,10 +1058,10 @@ public class TestASTBuilder {
 						node(CONT,loc(src, 13),
 							node(VAR, loc(src, 14), 
 								id("ticks", loc(src, 14)),
-								lit(0, loc(src, 14))),
+								lt(0, loc(src, 14))),
 							node(VAR, loc(src, 15), 
 								id("priority", loc(src, 15)),
-								lit(0, loc(src, 15))),
+								lt(0, loc(src, 15))),
 							node(VAR, loc(src, 16), 
 									id("handler", loc(src, 16)),
 									node(LAMBDA, loc(src, 16),
@@ -1046,7 +1080,7 @@ public class TestASTBuilder {
 					node(BODY, loc(src, 23), 
 						node(CALL, loc(src, 25),
 						node(QNAME, loc(src, 25), id("GM", loc(src, 25)), id("message",loc(src, 25))),
-						lit("Hello world!", loc(src, 25))))
+						lt("Hello world!", loc(src, 25))))
 					)
 				
 			)//section

@@ -21,7 +21,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.xgmtk.lore.ast.AST;
-import org.xgmtk.lore.ast.NodeType;
+import org.xgmtk.lore.ast.ASTException;
+import org.xgmtk.lore.ast.NonTerminalSymbol;
 
 /**
  * TODO write JavaDoc comment.
@@ -30,7 +31,7 @@ import org.xgmtk.lore.ast.NodeType;
  *
  */
 public class ASTScanner {
-	private final Map<NodeType, PartialASTScanner> table;
+	private final Map<NonTerminalSymbol, PartialASTScanner> table;
 	private ASTScannerContext context;
 	private Logger logger;
 	
@@ -50,21 +51,20 @@ public class ASTScanner {
 	 * TODO write JavaDoc comment.
 	 * 
 	 * @param symbol
-	 * @param visitor
+	 * @param scanner
 	 * @return
 	 */
-	public PartialASTScanner putPartialScanner(NodeType symbol, PartialASTScanner visitor){
-		return this.table.put(symbol, visitor);
+	public PartialASTScanner putPartialScanner(NonTerminalSymbol symbol, PartialASTScanner scanner){
+		return this.table.put(symbol, scanner);
 	}
 	
 	/**
 	 * TODO write JavaDoc comment.
 	 * 
 	 * @param root
-	 * @throws UnexpectedNodeException
-	 * @throws UnexpectedLiteralType 
+	 * @throws ASTException 
 	 */
-	public void scan(AST root) throws UnexpectedNodeException, UnexpectedLiteralType{
+	public void scan(AST root) throws ASTException {
 		this.context.startScan(root);
 	}
 }

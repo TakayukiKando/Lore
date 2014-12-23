@@ -47,6 +47,7 @@ public class PrintVisitor extends ASTVisitor{
 	public static void printTree(AST tree, PrintWriter prn, boolean ignoreLocator) {
 		ASTVisitor printer = new PrintVisitor(prn, ignoreLocator);
 		printer.visitTo(tree);
+		prn.flush();
 	}
 
 	private int depth;
@@ -68,7 +69,8 @@ public class PrintVisitor extends ASTVisitor{
 		++depth;
 		tabs = tabs(depth);
 		out.println(tabs+"node class: \""+node.getClass().getName()+"\"");
-		out.println(tabs+"node type: "+node.symbol.toString());
+		out.println(tabs+"node symbol: "+node.symbol.toString());
+		out.println(tabs+"node type: "+node.getType().toString());
 		if(!this.ignoreLocator){
 			out.println(tabs+"locator: ("+node.locator+")");
 		}
@@ -95,7 +97,7 @@ public class PrintVisitor extends ASTVisitor{
 	public <T> void enter(Literal<T> node) {
 		enter((AST)node);
 		String tabs = tabs(depth);
-		out.println(tabs+"literal type: \""+node.value.getClass().getName()+"\"");
+		out.println(tabs+"literal value class: \""+node.value.getClass().getName()+"\"");
 		out.println(tabs+"literal value: \""+node.value.toString()+"\"");
 	}
 

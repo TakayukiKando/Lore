@@ -16,43 +16,52 @@
  */
 package org.xgmtk.lore.symbols;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.xgmtk.lore.ast.ID;
+import org.xgmtk.lore.ast.Type;
+
 public class FormDef extends Section implements Type {
-	/**
-	 * TODO write JavaDoc comment.
-	 * 
-	 * @param name
-	 * @param symbols
-	 * @return
-	 * @throws AlreadyDefinedException
-	 */
-	public static FormDef formDef(String name, Symbol...symbols) throws AlreadyDefinedException {
-		return formDef(name, false, symbols);
-	}
+	public static final String ROOT_TYPE = "object";
+	
+	private List<String> parentTypeQName;
 
 	/**
 	 * TODO write JavaDoc comment.
 	 * 
 	 * @param name
-	 * @param isPraivate 
-	 * @param symbols
+	 * @param access 
 	 * @return
 	 * @throws AlreadyDefinedException
 	 */
-	public static FormDef formDef(String name, boolean isPraivate, Symbol...symbols) throws AlreadyDefinedException {
-		FormDef s = new FormDef(name, isPraivate);
-		s.defineAll(symbols);
-		return s;
+	public FormDef(String name, Access access) {
+		super(name, access);
+		this.parentTypeQName = Arrays.asList(FormDef.ROOT_TYPE);
 	}
 
-	public FormDef(String name, boolean isPrivate) {
-		super(name, isPrivate);
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param name
+	 * @return
+	 * @throws AlreadyDefinedException
+	 */
+	public FormDef(String name) {
+		this(name, Access.PUBLIC);
+	}
+	
+	public final void setParentTypeQNameIds(List<ID> parentTypeQName) {
+		this.setParentTypeQName(parentTypeQName.stream().map(id->id.id).collect(Collectors.toList()));
+	}
+	
+	public final void setParentTypeQName(List<String> parentTypeQName) {
+		this.parentTypeQName = parentTypeQName;
 	}
 
-	void enter(ScopeTreeVisitor astVisitor) {
-		astVisitor.enter(this);
-	}
-
-	void exit(ScopeTreeVisitor astVisitor) {
-		astVisitor.exit(this);
+	public final List<String> getParentTypeQName(){
+		return Collections.unmodifiableList(this.parentTypeQName);
 	}
 }

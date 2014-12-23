@@ -29,7 +29,7 @@ public class Literal<T> extends AST {
 	 * @param subtrees
 	 */
 	public Literal(T value, Locator location){
-		super(NodeType.LITERAL, location);
+		super(NonTerminalSymbol.LITERAL, location);
 		Objects.requireNonNull(value, "A value should not be null.");
 		this.value = value;
 	}
@@ -47,7 +47,9 @@ public class Literal<T> extends AST {
 	
 	@Override
 	public Literal<T> clone() {
-		return new Literal<T>(this.value, this.locator);
+		Literal<T> literal = new Literal<T>(this.value, this.locator);
+		literal.setType(this.getType());
+		return literal;
 	}
 	
 	@Override

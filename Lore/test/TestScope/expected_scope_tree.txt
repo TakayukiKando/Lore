@@ -1,0 +1,106 @@
+[name: "$root", access: public symbol kind: "GlobalScope"]{
+//Symbols
+  [name: "object", access: public symbol kind: "FormDef"]
+  [name: "integer", access: public symbol kind: "IntType"]
+  [name: "real", access: public symbol kind: "RealType"]
+  [name: "string", access: public symbol kind: "StringType"]
+  [name: "date", access: public symbol kind: "DateType"]
+  [name: "dice", access: public symbol kind: "DiceType"]
+  [name: "locator", access: public symbol kind: "LocatorType"]
+  [name: "html", access: public symbol kind: "HTMLType"]
+  [name: "jid", access: public symbol kind: "JIDType"]
+  [name: "xml", access: public symbol kind: "XMLType"]
+  [name: "url", access: public symbol kind: "URLType"]
+  [name: "range<integer>", access: public symbol kind: "RangeType"]
+  [name: "range<real>", access: public symbol kind: "RangeType"]
+  [name: "unit_base<integer>", access: public symbol kind: "UnitBaseType"]
+  [name: "unit_base<real>", access: public symbol kind: "UnitBaseType"]
+  [name: "$AnonymousTypes", access: public symbol kind: "Section"]
+  [name: "a", access: public, type: "[NOT_DEFINED]", symbol kind: "VariableSymbol"]
+  [name: "s", access: public symbol kind: "Section"]
+//Sub-scopes
+  [name: "object", access: public symbol kind: "FormDef"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "integer", access: public symbol kind: "IntType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "real", access: public symbol kind: "RealType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "string", access: public symbol kind: "StringType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "date", access: public symbol kind: "DateType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "dice", access: public symbol kind: "DiceType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "locator", access: public symbol kind: "LocatorType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "html", access: public symbol kind: "HTMLType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "jid", access: public symbol kind: "JIDType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "xml", access: public symbol kind: "XMLType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "url", access: public symbol kind: "URLType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "range<integer>", access: public symbol kind: "RangeType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "range<real>", access: public symbol kind: "RangeType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "unit_base<integer>", access: public symbol kind: "UnitBaseType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "unit_base<real>", access: public symbol kind: "UnitBaseType"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "$AnonymousTypes", access: public symbol kind: "Section"]{
+  //Symbols
+  //Sub-scopes
+  }
+  [name: "s", access: public symbol kind: "Section"]{
+  //Symbols
+    [name: "b", access: public, type: "[NOT_DEFINED]", symbol kind: "VariableSymbol"]
+    [name: "a", access: public, type: "[NOT_DEFINED]", symbol kind: "VariableSymbol"]
+    [name: "s", access: public symbol kind: "Section"]
+    [name: "sec", access: private symbol kind: "Section"]
+  //Sub-scopes
+    [name: "s", access: public symbol kind: "Section"]{
+    //Symbols
+      [name: "c", access: public, type: "[NOT_DEFINED]", symbol kind: "VariableSymbol"]
+      [name: "d", access: private, type: "[NOT_DEFINED]", symbol kind: "VariableSymbol"]
+    //Sub-scopes
+    }
+    [name: "sec", access: private symbol kind: "Section"]{
+    //Symbols
+      [name: "c", access: public, type: "[NOT_DEFINED]", symbol kind: "VariableSymbol"]
+      [name: "d", access: private, type: "[NOT_DEFINED]", symbol kind: "VariableSymbol"]
+    //Sub-scopes
+    }
+  }
+}

@@ -23,21 +23,29 @@ package org.xgmtk.lore.symbols;
  *
  */
 public interface Symbol {
-	static String getDescription(Symbol s){
-		return "[\""+s.getName()+"\", "+(s.isPrivate()? "private": "public")+", \""+s.getClass().getSimpleName()+"\"]";
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @return
+	 */
+	public String getName();
+
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @return
+	 */
+	public default Access getAccess() {
+		return Access.PUBLIC;
 	}
-
+	
 	/**
 	 * TODO write JavaDoc comment.
 	 * 
 	 * @return
 	 */
-	String getName();
-
-	/**
-	 * TODO write JavaDoc comment.
-	 * 
-	 * @return
-	 */
-	boolean isPrivate();
+	public default String getDescription(){
+		String typed = (this instanceof Typed)?", type: \""+((Typed)this).getType()+"\",": "";
+		return "[name: \""+this.getName()+"\", access: "+this.getAccess().getDesc()+typed+" symbol kind: \""+this.getClass().getSimpleName()+"\"]";
+	}	
 }

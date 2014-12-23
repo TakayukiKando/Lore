@@ -16,6 +16,8 @@
  */
 package org.xgmtk.lore.symbols;
 
+import java.util.Objects;
+
 /**
  * TODO write JavaDoc comment.
  * 
@@ -23,45 +25,31 @@ package org.xgmtk.lore.symbols;
  *
  */
 public class ScopedSymbol extends BaseScope implements Symbol{
-
-	/**
-	 * TODO write JavaDoc comment.
-	 * 
-	 * @param name
-	 * @param symbols
-	 * @return
-	 * @throws AlreadyDefinedException
-	 */
-	public static ScopedSymbol scopedSymbol(String name, Symbol...symbols) throws AlreadyDefinedException {
-		return scopedSymbol(name, false, symbols);
-	}
-	/**
-	 * TODO write JavaDoc comment.
-	 * 
-	 * @param name
-	 * @param isPrivate
-	 * @param symbols
-	 * @return
-	 * @throws AlreadyDefinedException
-	 */
-	public static ScopedSymbol scopedSymbol(String name, boolean isPrivate, Symbol...symbols) throws AlreadyDefinedException {
-		ScopedSymbol baseScope = new ScopedSymbol(name, isPrivate);
-		baseScope.defineAll(symbols);
-		return baseScope;
-	}
-
 	private final String name;
-	private final boolean isPraivate;
+	private final Access access;
 
 	/**
 	 * TODO write JavaDoc comment.
 	 * 
 	 * @param name
 	 * @param isPrivate 
+	 * @param srcAST 
 	 */
-	public ScopedSymbol(String name, boolean isPrivate){
+	public ScopedSymbol(String name, Access access){
+		Objects.nonNull(name);
+		Objects.nonNull(access);
 		this.name = name;
-		this.isPraivate = isPrivate;
+		this.access = access;
+	}
+	
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param name
+	 * @param srcAST
+	 */
+	public ScopedSymbol(String name){
+		this(name, Access.PUBLIC);
 	}
 	
 	@Override
@@ -70,20 +58,19 @@ public class ScopedSymbol extends BaseScope implements Symbol{
 	}
 
 	@Override
-	public boolean isPrivate() {
-		return this.isPraivate;
-	}
-	
-	void enter(ScopeTreeVisitor astVisitor) {
-		astVisitor.enter(this);
-	}
-
-	void exit(ScopeTreeVisitor astVisitor) {
-		astVisitor.exit(this);
+	public Access getAccess() {
+		return this.access;
 	}
 
 	@Override
 	public String toString(){
-		return Symbol.getDescription(this);
+		return getDescription();
+	}
+	
+
+	@Override
+	public String getScopeDescription() {
+		String description = this.getParent().isPresent()? this.getParent().get().getScopeDescription(): "[This scope is root]";
+		return "["+this.getDescription()+", parent: "+description+"]";
 	}
 }

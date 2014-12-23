@@ -68,6 +68,10 @@ public class ASTMatchers {
 					return false;
 				}
 			}
+			if(!Objects.equals(expected.getType(), target.getType())){
+				this.failureMessage = "Expected node(\""+expected.symbol+"\") type is \""+expected.getType()+"\" but Actual node(\""+target.symbol+"\") type is \""+target.getType()+"\".";
+				return false;
+			}
 			try{
 				AST.testExtendedPartEquality(expected, target);
 			}catch(Exception e){

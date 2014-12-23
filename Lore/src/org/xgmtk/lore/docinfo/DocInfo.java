@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.xgmtk.lore.Lore;
-import org.xgmtk.lore.types.StringContainer;
+import org.xgmtk.lore.builtin.StringContainer;
 import org.xgmtk.lore.utils.StringUtils;
 
 /**

@@ -8,30 +8,36 @@ import "types.lore":url;
 
 enum Hands { _1H; _2H; Sheild;}
 
-function selection(items: list<Item>, name: string)-> Hands{
+function selection0(items: list<Item>, name: string)-> Hands{
 	result = select(items.get(0).name){
 		case ("dagger"){
-			result = Hands._1H;
+			a = Hands._1H;
+			result = a;
 		}
 		case ("claymore"){
-			result = Hands._2H;
+			a = Hands._2H;
+			result = a;
 		}
 		default {
-			result = Hands.Sheild;
+			a = Hands.Sheild;
+			result = a;
 		}
 	};
 }
 
-rule selection(owner : Actor, items: list<Item>, name: string){
+rule selection1(owner : Actor, items: list<Item>, name: string){
 	select(items.get(0).name){
 		case ("dagger"){
-			owner.message(Hands._1H);
+			msg = Hands._1H;
+			owner.message(msg);
 		}
 		case ("claymore"){
-			owner.message(Hands._2H);
+			msg = Hands._2H;
+			owner.message(msg);
 		}
 		default {
-			owner.message(Hands.Sheild);
+			msg = Hands.Sheild;
+			owner.message(msg);
 		}
 	}
 }
@@ -42,13 +48,16 @@ form SampleActor extends Actor{
 	get0Name -> string{
 		result = select(items.get(0)){
 			as (x : Dagger){
-				result = x.type.name;
+				y = x;
+				result = y.type.name;
 			}
 			as (x : Claymore){
-				result = x.type.name;
+				y = x;
+				result = y.type.name;
 			}
 			default {
-				result = "unknown";
+				x = "unknown";
+				result = x;
 			}
 		};
 	}
@@ -57,15 +66,18 @@ form SampleActor extends Actor{
 		owners.forEach(@(owner : Actor, index : integer){
 			select(items.get(index)){
 				as (x : Dagger){
-					owner.message(x.type.name);
-					owner.equip(x);
+					y = x;
+					owner.message(y.type.name);
+					owner.equip(y);
 				}
 				as (x : Claymore){
-					owner.message(x.type.name);
-					owner.equip(x);
+					y = x;
+					owner.message(y.type.name);
+					owner.equip(y);
 				}
 				default {
-					owner.message("unknown");
+					x = "unknown";
+					owner.message(x);
 				}
 			}
 		});

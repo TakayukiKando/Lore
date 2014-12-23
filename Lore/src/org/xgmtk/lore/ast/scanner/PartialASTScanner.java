@@ -17,6 +17,7 @@
 package org.xgmtk.lore.ast.scanner;
 
 import org.xgmtk.lore.ast.AST;
+import org.xgmtk.lore.ast.ASTException;
 
 /**
  * TODO write JavaDoc comment.
@@ -29,9 +30,9 @@ public interface PartialASTScanner{
 	/**
 	 * TODO write JavaDoc comment.
 	 * 
-	 * @param visitor
+	 * @param context
 	 * @param node
 	 * @throws UnexpectedNodeException
 	 */
-	void matched(ASTScannerContext visitor, AST node) throws UnexpectedNodeException, UnexpectedLiteralType;
+	void matched(ASTScannerContext context, AST node) throws ASTException;
 }

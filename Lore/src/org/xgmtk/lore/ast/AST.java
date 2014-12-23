@@ -135,9 +135,11 @@ public class AST implements Iterable<AST>, Cloneable{
 	/**
 	 * The name of the root node of this tree.
 	 */
-	public final NodeType symbol;
+	public final NonTerminalSymbol symbol;
 	
-
+	/**
+	 * The source location of the node.
+	 */
 	public final Locator locator;
 
 
@@ -146,13 +148,15 @@ public class AST implements Iterable<AST>, Cloneable{
 	 */
 	private final List<AST> subtrees;
 
+	private Type type;
+	
 	/**
 	 * Initializer.
 	 *  
 	 * @param symbol
 	 * @param subtrees
 	 */
-	public AST(NodeType symbol, Locator location, AST...subtrees){
+	public AST(NonTerminalSymbol symbol, Locator location, AST...subtrees){
 		Objects.requireNonNull(symbol);
 		Objects.requireNonNull(location);
 		this.locator = location;
@@ -163,11 +167,14 @@ public class AST implements Iterable<AST>, Cloneable{
 			trees.add(t);
 		}
 		this.subtrees = trees;
+		this.type = Type.NOT_DEFINED;
 	}
 	
 	@Override
 	public AST clone(){
-		return new AST(this.symbol, this.locator, cloneChildren());
+		AST ast = new AST(this.symbol, this.locator, cloneChildren());
+		ast.setType(this.getType());
+		return ast;
 	}
 
 	protected AST[] cloneChildren() {
@@ -202,6 +209,25 @@ public class AST implements Iterable<AST>, Cloneable{
 		return Collections.unmodifiableList(this.subtrees);
 	}
 
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param type
+	 */
+	public void setType(Type type){
+		Objects.nonNull(type);
+		this.type = type;
+	}
+	
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @return
+	 */
+	public Type getType(){
+		return this.type;
+	}
+	
 	void enter(ASTVisitor astVisitor) {
 		astVisitor.enter(this);
 	}

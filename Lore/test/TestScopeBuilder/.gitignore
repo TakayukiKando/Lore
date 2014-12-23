@@ -1,0 +1,13 @@
+/TestScopeBuilder.testBuild.actual.txt
+/TestScopeBuilder.testBuild.expected.txt
+/TestScopeBuilder.testBuild.expected.initial.txt
+/TestScopeBuilder.testExpressionsScopes.actual.txt
+/TestScopeBuilder.testExpressionsScopes.expected.initial.txt
+/TestScopeBuilder.testExpressionsScopes.expected.txt
+/TestScopeBuilder.testTypesLoreScopes.actual.txt
+/TestScopeBuilder.testTypesLoreScopes.expected.initial.txt
+/TestScopeBuilder.testTypesLoreScopes.expected.txt
+/TestScopeBuilder.testLambdaScopes.actual.txt
+/TestScopeBuilder.testLambdaScopes.expected.txt
+/TestScopeBuilder.testSelectScopes.actual.txt
+/TestScopeBuilder.testSelectScopes.expected.txt

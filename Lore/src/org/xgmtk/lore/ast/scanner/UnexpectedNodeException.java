@@ -19,7 +19,7 @@ package org.xgmtk.lore.ast.scanner;
 import org.xgmtk.lore.ast.AST;
 import org.xgmtk.lore.ast.Locator;
 import org.xgmtk.lore.ast.ASTException;
-import org.xgmtk.lore.ast.NodeType;
+import org.xgmtk.lore.ast.NonTerminalSymbol;
 
 /**
  * TODO write JavaDoc comment.
@@ -70,8 +70,8 @@ public class UnexpectedNodeException extends ASTException{
 	 * @param actualType
 	 * @param actualSymbol
 	 */
-	public UnexpectedNodeException(Locator locator, Class<AST> expectedNodeClass, ASTScannerEventType expectedType, NodeType expectedSymbol, 
-			Class<? extends AST> actualNodeClass, ASTScannerEventType actualType, NodeType actualSymbol) {
+	public UnexpectedNodeException(Locator locator, Class<AST> expectedNodeClass, ASTScannerEventType expectedType, NonTerminalSymbol expectedSymbol, 
+			Class<? extends AST> actualNodeClass, ASTScannerEventType actualType, NonTerminalSymbol actualSymbol) {
 		super(locator, "Expected AST node is [class: \""+expectedNodeClass.getSimpleName()+"\", type: "+expectedType+", symbol: "+expectedSymbol+" ] but actual AST node is [class: \""+actualNodeClass.getSimpleName()+"\", type: "+actualType+", symbol: "+actualSymbol+" ]");
 	}
 }

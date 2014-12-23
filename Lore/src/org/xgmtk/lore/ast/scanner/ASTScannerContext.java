@@ -27,10 +27,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xgmtk.lore.ast.AST;
+import org.xgmtk.lore.ast.ASTException;
 import org.xgmtk.lore.ast.ASTVisitor;
 import org.xgmtk.lore.ast.ID;
 import org.xgmtk.lore.ast.Literal;
-import org.xgmtk.lore.ast.NodeType;
+import org.xgmtk.lore.ast.NonTerminalSymbol;
 
 /**
  * TODO write JavaDoc comment.
@@ -53,14 +54,14 @@ public class ASTScannerContext{
 	
 	private final ASTVisitor visitor;
 	
-	private final Map<NodeType, PartialASTScanner> table;
+	private final Map<NonTerminalSymbol, PartialASTScanner> table;
 	private SynchronousQueue<ASTScannerContext.ASTScanEvent> queue;
 	private ASTScannerContext.ASTScanEvent lastEvent;
 	private ExecutorService executor;
 
 	private Logger logger;
 	
-	protected ASTScannerContext(Map<NodeType, PartialASTScanner> table, Logger logger){
+	protected ASTScannerContext(Map<NonTerminalSymbol, PartialASTScanner> table, Logger logger){
 		this.logger = logger;
 		this.table = table;
 		this.queue = new SynchronousQueue<>();
@@ -108,7 +109,7 @@ public class ASTScannerContext{
 		}
 	}
 
-	protected void startScan(AST root) throws UnexpectedNodeException, UnexpectedLiteralType{
+	protected void startScan(AST root) throws ASTException{
 		Future<?> f = executor.submit(()->{visitor.visitTo(root);});
 		this.next();
 		this.next();
@@ -152,7 +153,7 @@ public class ASTScannerContext{
 	 * @param eventType
 	 * @return
 	 */
-	public boolean isNode(NodeType symbol, ASTScannerEventType eventType) {
+	public boolean isNode(NonTerminalSymbol symbol, ASTScannerEventType eventType) {
 		return !(lastEvent.node instanceof Literal<?>)
 				&& !(lastEvent.node instanceof ID)
 				&& lastEvent.type.equals(eventType)
@@ -186,7 +187,7 @@ public class ASTScannerContext{
 	 * @param expectedType
 	 * @throws UnexpectedNodeException
 	 */
-	public void require(NodeType symbol, ASTScannerEventType expectedType) throws UnexpectedNodeException{
+	public void require(NonTerminalSymbol symbol, ASTScannerEventType expectedType) throws UnexpectedNodeException{
 		if(!isNode(symbol, expectedType)){
 			throw new UnexpectedNodeException(lastEvent.node.locator, AST.class, expectedType, symbol, lastEvent.node.getClass(), lastEvent.type, lastEvent.node.symbol);
 		}
@@ -246,10 +247,11 @@ public class ASTScannerContext{
 	 * @param rootOfSubtree
 	 * @param subPartialNodeListener
 	 * @return
+	 * @throws ASTException 
 	 * @throws UnexpectedNodeException
-	 * @throws UnexpectedLiteralType 
+	 * @throws UnexpectedLiteralTypeException 
 	 */
-	public <T extends PartialASTScanner> T delegate(AST rootOfSubtree, T subPartialNodeListener) throws UnexpectedNodeException, UnexpectedLiteralType{
+	public <T extends PartialASTScanner> T delegate(AST rootOfSubtree, T subPartialNodeListener) throws ASTException{
 		subPartialNodeListener.matched(this, rootOfSubtree);
 		return subPartialNodeListener;
 	}
@@ -258,10 +260,11 @@ public class ASTScannerContext{
 	 * TODO write JavaDoc comment.
 	 * 
 	 * @param rootOfSubtree
+	 * @throws ASTException 
 	 * @throws UnexpectedNodeException
-	 * @throws UnexpectedLiteralType 
+	 * @throws UnexpectedLiteralTypeException 
 	 */
-	public void skip(AST rootOfSubtree) throws UnexpectedNodeException, UnexpectedLiteralType{
+	public void skip(AST rootOfSubtree) throws ASTException{
 		for(;;){
 			ASTScannerContext.ASTScanEvent ev = this.lastEvent();
 //			this.logger.log(Level.FINEST, "ASTScannerContext#skipSubtree()"+
@@ -307,10 +310,10 @@ public class ASTScannerContext{
 		return (Literal<?>)endEvent.node;
 	}
 	
-	public <T extends Object> T getLiteral(Class<T> type) throws UnexpectedNodeException, UnexpectedLiteralType {
+	public <T extends Object> T getLiteral(Class<T> type) throws UnexpectedNodeException, UnexpectedLiteralTypeException {
 		Literal<?> literal = this.getLiteral();
 		if(!(type.isInstance(literal.value))){
-			throw new UnexpectedLiteralType(literal.locator, literal.value.getClass(), URL.class);
+			throw new UnexpectedLiteralTypeException(literal.locator, literal.value.getClass(), URL.class);
 		}
 		return type.cast(literal.value);
 	}

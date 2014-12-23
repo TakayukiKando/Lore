@@ -46,7 +46,7 @@ section types {
 		}
 
 		alter damage(damages : list<integer>){
-			current = current - damages.sum;
+			self.current = current - damages.sum;
 		} 
 	}
 

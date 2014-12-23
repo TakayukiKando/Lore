@@ -22,32 +22,87 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.xgmtk.lore.symbols.BaseScope.baseScope;
-import static org.xgmtk.lore.symbols.GlobalScope.globalScope;
-import static org.xgmtk.lore.symbols.PrintVisitor.printScopeTree;
-import static org.xgmtk.lore.symbols.Section.section;
-import static org.xgmtk.lore.symbols.ScopedSymbol.scopedSymbol;
-import static org.xgmtk.lore.symbols.VariableSymbol.var;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Collectors;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.xgmtk.lore.symbols.Access;
 import org.xgmtk.lore.symbols.BaseScope;
-import org.xgmtk.lore.symbols.PrimitiveTypeSymbol;
+import org.xgmtk.lore.symbols.GlobalScope;
 import org.xgmtk.lore.symbols.Scope;
+import org.xgmtk.lore.symbols.Scope.AlreadyDefinedSymbolException;
+import org.xgmtk.lore.symbols.Section;
 import org.xgmtk.lore.symbols.Symbol;
-import org.xgmtk.lore.symbols.Scope.AlreadyDefinedException;
 import org.xgmtk.lore.symbols.ScopedSymbol;
-import org.xgmtk.lore.symbols.TypeConstructorSymbol;
+import org.xgmtk.lore.symbols.VariableSymbol;
+import org.xgmtk.lore.symbols.builtin.BuiltinTypes;
 
 public class TestScope {
+	private static Path wdir;
+	private static Path dir;
+	private static final String clsName = TestScope.class.getSimpleName();
+	
+	@BeforeClass
+	public static void setupStatic(){
+		wdir = Paths.get(System.getProperty("user.dir"));
+		dir = wdir.resolve(Paths.get("test", clsName));
+	}
+	
 	private static final String NEWLINE;
 	static{
 		NEWLINE = System.getProperties().getProperty("line.separator");
 	}
 	
+	private static Symbol var(String string, Access access) {
+		return new VariableSymbol(string, access);
+	}
+
+	private static Symbol var(String string) {
+		return new VariableSymbol(string);
+	}
+
+	private static ScopedSymbol scopedSymbol(String string, Symbol...vars) throws AlreadyDefinedSymbolException {
+		ScopedSymbol s = new ScopedSymbol(string);
+		s.defineAll(vars);
+		return s;
+	}
+
+	private static Scope globalScope(Symbol...vars) throws AlreadyDefinedSymbolException {
+		ScopedSymbol s = new GlobalScope();
+		s.defineAll(vars);
+		return s;
+	}
+
+	private static Section section(String string, Access access, Symbol...vars) throws AlreadyDefinedSymbolException {
+		Section s = new Section(string, access);
+		s.defineAll(vars);
+		return s;
+	}
+
+	private static Section section(String string, Symbol...vars) throws AlreadyDefinedSymbolException {
+		Section s = new Section(string);
+		s.defineAll(vars);
+		return s;
+	}
+
+	public static void dump(Scope actual, Path pathToOutput) throws IOException {
+		try(PrintWriter out = new PrintWriter(new FileWriter(pathToOutput.toFile()))){
+			actual.dump(out);
+			out.flush();
+		}
+	}
+
 	@Test
-	public void testSimpleResolve() throws AlreadyDefinedException{
+	public void testSimpleResolve() throws AlreadyDefinedSymbolException{
 		Scope s = baseScope(var("a"),var("b"));
 		assertThat(s.resolveLocal("a").get().getName(),is("a"));
 		assertThat(s.resolveLocal("b").get().getName(),is("b"));
@@ -59,7 +114,7 @@ public class TestScope {
 	}
 	
 	@Test
-	public void testNestedResolve() throws AlreadyDefinedException{
+	public void testNestedResolve() throws AlreadyDefinedSymbolException{
 		Scope root = baseScope(var("a"));
 		BaseScope s0 = baseScope(var("b"), var("a"));
 		root.put(s0);
@@ -77,7 +132,7 @@ public class TestScope {
 	}
 	
 	@Test
-	public void testNestedScopedSymbolResolve() throws AlreadyDefinedException{
+	public void testNestedScopedSymbolResolve() throws AlreadyDefinedSymbolException{
 		ScopedSymbol root = scopedSymbol("s", var("a"));
 		ScopedSymbol s0 = scopedSymbol("s", var("b"), var("a"));
 		root.define(s0);
@@ -100,36 +155,36 @@ public class TestScope {
 			ScopedSymbol sMulti = scopedSymbol("s", var("b"), var("a"));
 			root.define(sMulti);
 			fail();
-		}catch(AlreadyDefinedException e){
+		}catch(AlreadyDefinedSymbolException e){
 			//expected.
 		}
 	}
 	
 	@Test
-	public void testSectionAndGlobal() throws AlreadyDefinedException{
-		Scope g = globalScope(var("a"));
+	public void testSectionAndGlobal() throws AlreadyDefinedSymbolException{
+		Scope actual = globalScope(var("a"));
 		ScopedSymbol s0 = section("s", var("b"), var("a"));
-		g.define(s0);
-		ScopedSymbol s1 = section("s", var("c"), var("d", true));
-		ScopedSymbol sec = section("sec", true, var("c"), var("d", true));
+		actual.define(s0);
+		ScopedSymbol s1 = section("s", var("c"), var("d", Access.PRIVATE));
+		ScopedSymbol sec = section("sec", Access.PRIVATE, var("c"), var("d", Access.PRIVATE));
 		s0.define(s1);
 		s0.define(sec);
 		
-		for(Symbol s : PrimitiveTypeSymbol.values()){
+		for(Symbol s : BuiltinTypes.allSymbols()){
 			assertThat(s1.resolve(s.getName()).get(), sameInstance(s));
 		}
-		for(Symbol s : TypeConstructorSymbol.values()){
-			assertThat(s1.resolve(s.getName()).get(), sameInstance(s));
-		}
+//		for(Symbol s : ParametricType.Constructor.values()){
+//			assertThat(s1.resolve(s.getName()).get(), sameInstance(s));
+//		}
 		
-		assertThat(g.resolveFromOuter("s", "s", "c").get().getName(), is("c"));
+		assertThat(actual.resolveFromOuter("s", "s", "c").get().getName(), is("c"));
 		assertThat(s0.resolveFromOuter("sec", "c").get().getName(), is("c"));
 		assertThat(s0.resolveFromOuter("sec", "d").isPresent(), is(false));
-		assertThat(g.resolveFromOuter("s", "sec", "c").isPresent(), is(false));
-		assertThat(g.resolveFromOuter("s", "s", "d").isPresent(), is(false));
-		assertThat(g.resolveFromOuter("s", "b", "c").isPresent(), is(false));
+		assertThat(actual.resolveFromOuter("s", "sec", "c").isPresent(), is(false));
+		assertThat(actual.resolveFromOuter("s", "s", "d").isPresent(), is(false));
+		assertThat(actual.resolveFromOuter("s", "b", "c").isPresent(), is(false));
 		try{
-			g.resolveFromOuter();
+			actual.resolveFromOuter();
 			fail();
 		}catch(IllegalArgumentException e){
 			//expected.
@@ -137,59 +192,35 @@ public class TestScope {
 		
 		try{
 			ScopedSymbol sMulti = section("s", var("b"), var("a"));
-			g.define(sMulti);
+			actual.define(sMulti);
 			fail();
-		}catch(AlreadyDefinedException e){
+		}catch(AlreadyDefinedSymbolException e){
 			//expected
 		}
 	}
 	
 	@Test
-	public void testPrint() throws AlreadyDefinedException{
-		Scope g = globalScope(var("a"));
+	public void testPrint() throws AlreadyDefinedSymbolException, IOException{
+		Scope actual = globalScope(var("a"));
 		ScopedSymbol s0 = section("s", var("b"), var("a"));
-		g.define(s0);
-		ScopedSymbol s1 = section("s", var("c"), var("d", true));
-		ScopedSymbol sec = section("sec", true, var("c"), var("d", true));
+		actual.define(s0);
+		ScopedSymbol s1 = section("s", var("c"), var("d", Access.PRIVATE));
+		ScopedSymbol sec = section("sec", Access.PRIVATE, var("c"), var("d", Access.PRIVATE));
 		s0.define(s1);
 		s0.define(sec);
 		
-		String expected = 
-			"{\"$root\""+NEWLINE+
-			"  [\"a\", public, \"VariableSymbol\"]"+NEWLINE+
-			"  [\"dice\", public, \"PrimitiveTypeSymbol\"]"+NEWLINE+
-			"  [\"html\", public, \"PrimitiveTypeSymbol\"]"+NEWLINE+
-			"  [\"integer\", public, \"PrimitiveTypeSymbol\"]"+NEWLINE+
-			"  [\"list\", public, \"TypeConstructorSymbol\"]"+NEWLINE+
-			"  [\"locator\", public, \"PrimitiveTypeSymbol\"]"+NEWLINE+
-			"  [\"range\", public, \"TypeConstructorSymbol\"]"+NEWLINE+
-			"  [\"real\", public, \"PrimitiveTypeSymbol\"]"+NEWLINE+
-			"  [\"s\", public, \"Section\"]"+NEWLINE+
-			"  [\"string\", public, \"PrimitiveTypeSymbol\"]"+NEWLINE+
-			"  [\"unit\", public, \"TypeConstructorSymbol\"]"+NEWLINE+
-			"  [\"url\", public, \"PrimitiveTypeSymbol\"]"+NEWLINE+
-			"  [\"xml\", public, \"PrimitiveTypeSymbol\"]"+NEWLINE+
-			"  {\"s\""+NEWLINE+
-			"    [\"a\", public, \"VariableSymbol\"]"+NEWLINE+
-			"    [\"b\", public, \"VariableSymbol\"]"+NEWLINE+
-			"    [\"s\", public, \"Section\"]"+NEWLINE+
-			"    [\"sec\", private, \"Section\"]"+NEWLINE+
-			"    {\"s\""+NEWLINE+
-			"      [\"c\", public, \"VariableSymbol\"]"+NEWLINE+
-			"      [\"d\", private, \"VariableSymbol\"]"+NEWLINE+
-			"    }"+NEWLINE+
-			"    {\"sec\""+NEWLINE+
-			"      [\"c\", public, \"VariableSymbol\"]"+NEWLINE+
-			"      [\"d\", private, \"VariableSymbol\"]"+NEWLINE+
-			"    }"+NEWLINE+
-			"  }"+NEWLINE+
-			"}"+NEWLINE;
+		String expected = null;
+		try(BufferedReader rd = new BufferedReader(new FileReader(dir.resolve("expected_scope_tree.txt").toFile()))){
+			expected = rd.lines().map(s->s+NEWLINE).collect(Collectors.joining());
+		}
 		
 		//PrintStream prn = System.err;
 		StringWriter sw = new StringWriter();
 		PrintWriter prn = new PrintWriter(sw);
-		printScopeTree(g, prn);
+		actual.dump(prn);
 		
+		dump(actual, dir.resolve("actual_scope_tree.txt"));
+
 		assertThat(sw.toString(), is(expected));
 		
 	}

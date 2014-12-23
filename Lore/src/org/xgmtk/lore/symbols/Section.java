@@ -26,41 +26,21 @@ import java.util.Optional;
  *
  */
 public class Section extends ScopedSymbol {
-
-	/**
-	 * TODO write JavaDoc comment.
-	 * 
-	 * @param name
-	 * @param symbols
-	 * @return
-	 * @throws AlreadyDefinedException
-	 */
-	public static Section section(String name, Symbol...symbols) throws AlreadyDefinedException {
-		return section(name, false, symbols);
-	}
-
-	/**
-	 * TODO write JavaDoc comment.
-	 * 
-	 * @param name
-	 * @param isPraivate 
-	 * @param symbols
-	 * @return
-	 * @throws AlreadyDefinedException
-	 */
-	public static Section section(String name, boolean isPraivate, Symbol...symbols) throws AlreadyDefinedException {
-		Section baseScope = new Section(name, isPraivate);
-		baseScope.defineAll(symbols);
-		return baseScope;
-	}
-
 	/**
 	 * TODO write JavaDoc comment.
 	 * @param name
 	 * @param isPrivate 
 	 */
-	public Section(String name, boolean isPrivate) {
-		super(name, isPrivate);
+	public Section(String name, Access access) {
+		super(name, access);
+	}
+	
+	/**
+	 * TODO write JavaDoc comment.
+	 * @param name
+	 */
+	public Section(String name) {
+		this(name, Access.PUBLIC);
 	}
 	
 	@Override
@@ -76,7 +56,7 @@ public class Section extends ScopedSymbol {
 		
 		Symbol symbol = sym.get();
 
-		if(symbol.isPrivate() && depth > 0){
+		if(symbol.getAccess().equals(Access.PRIVATE) && depth > 0){
 			return Optional.empty();
 		}
 		
@@ -91,13 +71,5 @@ public class Section extends ScopedSymbol {
 		Scope nested = (Scope)symbol;
 		String[] sub = Arrays.asList(names).subList(1, names.length).toArray(new String[0]);
 		return nested.resolveFromOuter(depth + 1, sub);
-	}
-
-	void enter(ScopeTreeVisitor astVisitor) {
-		astVisitor.enter(this);
-	}
-
-	void exit(ScopeTreeVisitor astVisitor) {
-		astVisitor.exit(this);
 	}
 }

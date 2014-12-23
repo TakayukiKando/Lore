@@ -32,7 +32,7 @@ public class BaseScope extends Scope{
 	 * @return
 	 * @throws AlreadyDefinedException
 	 */
-	public static BaseScope baseScope(Symbol...symbols) throws AlreadyDefinedException {
+	public static BaseScope baseScope(Symbol...symbols) throws AlreadyDefinedSymbolException {
 		BaseScope baseScope = new BaseScope();
 		baseScope.defineAll(symbols);
 		return baseScope;
@@ -42,13 +42,4 @@ public class BaseScope extends Scope{
 	protected Optional<Symbol> resolveFromOuter(int depth, String...name) {
 		return Optional.empty();
 	}
-	
-	void enter(ScopeTreeVisitor astVisitor) {
-		astVisitor.enter(this);
-	}
-
-	void exit(ScopeTreeVisitor astVisitor) {
-		astVisitor.exit(this);
-	}
-
 }

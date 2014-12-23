@@ -37,14 +37,14 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.xgmtk.lore.ast.Locator;
 import org.xgmtk.lore.ast.loader.Loader;
-import org.xgmtk.lore.ast.scanner.UnexpectedLiteralType;
+import org.xgmtk.lore.ast.scanner.UnexpectedLiteralTypeException;
 import org.xgmtk.lore.ast.scanner.test.TestASTScanner;
+import org.xgmtk.lore.builtin.JID;
+import org.xgmtk.lore.builtin.SimpleString;
+import org.xgmtk.lore.builtin.JID.SyntaxException;
 import org.xgmtk.lore.docinfo.Author;
 import org.xgmtk.lore.docinfo.DocInfo;
 import org.xgmtk.lore.docinfo.History;
-import org.xgmtk.lore.types.JID;
-import org.xgmtk.lore.types.JID.SyntaxException;
-import org.xgmtk.lore.types.SimpleString;
 import org.xgmtk.lore.utils.SystemErrorHandler;
 
 public class TestLoader {
@@ -82,12 +82,12 @@ public class TestLoader {
 	}
 	
 	@Test
-	public void testLoadDocInfo_BasicLore() throws UnexpectedLiteralType, IOException, SyntaxException{
+	public void testLoadDocInfo_BasicLore() throws UnexpectedLiteralTypeException, IOException, SyntaxException{
 		DocInfo expectedDocInfo = new DocInfo(basicLore);
 		expectedDocInfo.setVersion(new URL("http://xgmtk.org/lore/1.0"));
 		expectedDocInfo.setEncoding("UTF-8");
 		expectedDocInfo.setTitle("基本型");
-		expectedDocInfo.setDescription(SimpleString.create("共通する基本型の定義。\r\n", new Locator(basicLore, 1), logger));
+		expectedDocInfo.setDescription(new SimpleString("共通する基本型の定義。\r\n", new Locator(basicLore, 1), logger));
 		Author authorX = new Author("XGMTK.org");
 		authorX.addContact(new URL("mailto:develop@xgmtk.org"));
 		expectedDocInfo.addAutohr(authorX);
@@ -127,17 +127,17 @@ public class TestLoader {
 		assertThat(loader.getDocInfos(), is(expectedInfos));
 	}
 	@Test
-	public void testLoadDocInfos_Funcall() throws UnexpectedLiteralType, IOException, SyntaxException{
+	public void testLoadDocInfos_Funcall() throws UnexpectedLiteralTypeException, IOException, SyntaxException{
 		Map<URL,DocInfo> expectedInfos = new HashMap<>();
 		
 		DocInfo expectedDocInfoF = new DocInfo(funcallLore);
 		expectedDocInfoF.setTitle("関数呼び出し");
-		expectedDocInfoF.setDescription(SimpleString.create("関数呼び出しの結果を格納する変数宣言構文のサンプル。\r\nパーサーのテスト用。\r\n", new Locator(basicLore, 1), logger));
+		expectedDocInfoF.setDescription(new SimpleString("関数呼び出しの結果を格納する変数宣言構文のサンプル。\r\nパーサーのテスト用。\r\n", new Locator(basicLore, 1), logger));
 		expectedInfos.put(expectedDocInfoF.getSource(), expectedDocInfoF);
 
 		DocInfo expectedDocInfoT = new DocInfo(typesLore);
 		expectedDocInfoT.setTitle("型宣言");
-		expectedDocInfoT.setDescription(SimpleString.create("型宣言構文のサンプル。\r\nパーサーのテスト用。\r\n", new Locator(basicLore, 1), logger));
+		expectedDocInfoT.setDescription(new SimpleString("型宣言構文のサンプル。\r\nパーサーのテスト用。\r\n", new Locator(basicLore, 1), logger));
 		expectedInfos.put(expectedDocInfoT.getSource(), expectedDocInfoT);
 
 		Loader loader = new Loader(this.logger);

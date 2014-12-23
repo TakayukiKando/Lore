@@ -45,13 +45,14 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.xgmtk.lore.Lore;
+import org.xgmtk.lore.builtin.HTML;
+import org.xgmtk.lore.builtin.JID;
+import org.xgmtk.lore.builtin.Location;
+import org.xgmtk.lore.builtin.SimpleString;
+import org.xgmtk.lore.builtin.XML;
 import org.xgmtk.lore.parser.LoreBaseListener;
 import org.xgmtk.lore.parser.LoreLexer;
 import org.xgmtk.lore.parser.LoreParser;
-import org.xgmtk.lore.types.HTML;
-import org.xgmtk.lore.types.JID;
-import org.xgmtk.lore.types.Location;
-import org.xgmtk.lore.types.XML;
 
 public class ASTBuilder extends LoreBaseListener {
 	public static final String DEFAULT_ENCODING = "UTF-8";
@@ -184,7 +185,7 @@ public class ASTBuilder extends LoreBaseListener {
 		return this.tree;
 	}
 	
-	protected void nonterminalNodeAsResult(ParserRuleContext ctx, NodeType type) {
+	protected void nonterminalNodeAsResult(ParserRuleContext ctx, NonTerminalSymbol type) {
 		AST n = node(type, loc(src, ctx.start.getLine()));
 		n.getMdifiableChildren().addAll(this.getChildrenList());
 		this.result(n);
@@ -194,8 +195,8 @@ public class ASTBuilder extends LoreBaseListener {
 		this.result(id(idString, loc(src, ctx.getStart().getLine())));
 	}
 
-	protected NodeType selectNonterminalSymbol(ParserRuleContext ctx, String symbolString, final NodeType[] symbols) {
-		for(NodeType type:symbols){
+	protected NonTerminalSymbol selectNonterminalSymbol(ParserRuleContext ctx, String symbolString, final NonTerminalSymbol[] symbols) {
+		for(NonTerminalSymbol type:symbols){
 			if(type.getSymbolString().equals(symbolString)){
 				return type;
 			}
@@ -204,7 +205,7 @@ public class ASTBuilder extends LoreBaseListener {
 	}
 
 	protected AST buildOperatorTree(ParserRuleContext ctx,
-			final NodeType[] ops) {
+			final NonTerminalSymbol[] ops) {
 //		printContext(ctx);
 		List<AST> cs = this.getChildrenList();
 //		System.err.println("ParseTree: \""+ctx.getText()+"\"");
@@ -214,7 +215,7 @@ public class ASTBuilder extends LoreBaseListener {
 		int ci = 1;
 		for(int i = 1 ; i < ctx.getChildCount(); i+=2){
 			AST right = cs.get(ci++);
-			NodeType t = selectNonterminalSymbol(ctx, ctx.getChild(i).getText(), ops);
+			NonTerminalSymbol t = selectNonterminalSymbol(ctx, ctx.getChild(i).getText(), ops);
 			left = node(t, loc(src, ctx.getStart().getLine()), left, right);
 		}
 		return left;
@@ -223,7 +224,7 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void enterLore(@NotNull LoreParser.LoreContext ctx) {
 		this.newChildrenList();
-		this.tree = node(NodeType.ROOT, loc(src, 0));
+		this.tree = node(NonTerminalSymbol.ROOT, loc(src, 0));
 	}
 	
 	@Override
@@ -239,7 +240,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitDocinfo(@NotNull LoreParser.DocinfoContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.DOCINFO);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.DOCINFO);
 	}
 	
 	@Override
@@ -255,7 +256,7 @@ public class ASTBuilder extends LoreBaseListener {
 //		String encName = trim(child2.getText(), "\"", "\"");
 //		n.getMdifiableChildren().add(lit(encName, loc(src, ctx.start.getLine())));
 //		this.result(n);
-		this.nonterminalNodeAsResult(ctx, NodeType.ENCODING);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.ENCODING);
 	}
 
 	@Override
@@ -265,7 +266,7 @@ public class ASTBuilder extends LoreBaseListener {
 	
 	@Override
 	public void exitVersion(@NotNull LoreParser.VersionContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.VERSION);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.VERSION);
 	}
 
 	@Override
@@ -275,7 +276,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitDescription(@NotNull LoreParser.DescriptionContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.DESC);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.DESC);
 	}
 
 	@Override
@@ -285,7 +286,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitAuthor(@NotNull LoreParser.AuthorContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.AUTHOR);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.AUTHOR);
 	}
 
 	@Override
@@ -295,7 +296,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitHistory(@NotNull LoreParser.HistoryContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.HISTORY);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.HISTORY);
 	}
 
 	
@@ -308,7 +309,7 @@ public class ASTBuilder extends LoreBaseListener {
 	public void exitImport_other(@NotNull LoreParser.Import_otherContext ctx) {
 //		System.err.println("** Author");
 //		printContext(ctx);
-		this.nonterminalNodeAsResult(ctx, NodeType.IMPORT);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.IMPORT);
 	}
 
 	@Override
@@ -318,7 +319,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitSection(@NotNull LoreParser.SectionContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.SECTION);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.SECTION);
 	}
 
 	@Override
@@ -328,7 +329,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitPrivate_section_element(@NotNull LoreParser.Private_section_elementContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.PRIVATE);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.PRIVATE);
 	}
 
 	
@@ -344,7 +345,7 @@ public class ASTBuilder extends LoreBaseListener {
 		AST left = cs.get(0);
 		for(int i = 1; i < cs.size(); ++i){
 			AST right = cs.get(i);
-			left = node(NodeType.QNAME, loc(src, ctx.getStart().getLine()), left, right);
+			left = node(NonTerminalSymbol.QNAME, loc(src, ctx.getStart().getLine()), left, right);
 		}
 		this.result(left);
 	}
@@ -360,7 +361,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitEnum_def(@NotNull LoreParser.Enum_defContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.ENUM_DEF);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.ENUM_DEF);
 	}
 
 	@Override
@@ -370,7 +371,7 @@ public class ASTBuilder extends LoreBaseListener {
 	
 	@Override
 	public void exitEnum_elem(@NotNull LoreParser.Enum_elemContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.ENUM_VAL);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.ENUM_VAL);
 	}
 	
 	@Override
@@ -380,7 +381,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitEnum_field(@NotNull LoreParser.Enum_fieldContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.VAR);		
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.VAR);		
 	}
 
 	@Override
@@ -390,7 +391,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitUnit_def(@NotNull LoreParser.Unit_defContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.UNIT_DEF);		
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.UNIT_DEF);		
 	}
 	
 	@Override
@@ -400,7 +401,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitForm_def(@NotNull LoreParser.Form_defContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.FORM_DEF);		
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.FORM_DEF);		
 	}
 	
 	@Override
@@ -410,7 +411,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitForm_cont_def(@NotNull LoreParser.Form_cont_defContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.CONT);		
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.CONT);		
 	}
 
 	@Override
@@ -420,7 +421,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitPrivate_member_def(@NotNull LoreParser.Private_member_defContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.PRIVATE);		
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.PRIVATE);		
 	}
 	
 	@Override
@@ -431,7 +432,7 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitMember_initializer(@NotNull LoreParser.Member_initializerContext ctx) {
 		if(ctx.getText().startsWith("override")){
-			this.nonterminalNodeAsResult(ctx, NodeType.OVERRIDE);
+			this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.OVERRIDE);
 		}else{
 			this.result(this.getChildrenList().get(0));
 		}
@@ -444,7 +445,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitType_spec(@NotNull LoreParser.Type_specContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.TYPE_SPEC);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.TYPE_SPEC);
 	}
 
 	@Override
@@ -459,7 +460,7 @@ public class ASTBuilder extends LoreBaseListener {
 //		System.err.println("cs.size(): "+cs.size());
 		AST type = cs.get(1);
 		AST params = cs.get(0);
-		this.result(node(NodeType.LAMBDA_TYPE, loc(src, ctx.getStart().getLine()), type, params));
+		this.result(node(NonTerminalSymbol.LAMBDA_TYPE, loc(src, ctx.getStart().getLine()), type, params));
 	}
 
 	@Override
@@ -471,8 +472,8 @@ public class ASTBuilder extends LoreBaseListener {
 	public void exitLambda_type_no_param(@NotNull LoreParser.Lambda_type_no_paramContext ctx) {
 		List<AST> cs = this.getChildrenList();
 		AST type = cs.get(0);
-		AST params = node(NodeType.PARAMS, loc(src, ctx.getStart().getLine()));
-		this.result(node(NodeType.LAMBDA_TYPE, loc(src, ctx.getStart().getLine()), type, params));
+		AST params = node(NonTerminalSymbol.PARAMS, loc(src, ctx.getStart().getLine()));
+		this.result(node(NonTerminalSymbol.LAMBDA_TYPE, loc(src, ctx.getStart().getLine()), type, params));
 	}
 
 	@Override
@@ -482,7 +483,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitLambda_type_no_return(@NotNull LoreParser.Lambda_type_no_returnContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.LAMBDA_TYPE);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.LAMBDA_TYPE);
 	}
 
 	@Override
@@ -492,8 +493,8 @@ public class ASTBuilder extends LoreBaseListener {
 	
 	@Override
 	public void exitLambda_type_no_param_no_return(@NotNull LoreParser.Lambda_type_no_param_no_returnContext ctx) {
-		AST params = node(NodeType.PARAMS, loc(src, ctx.getStart().getLine()));
-		this.result(node(NodeType.LAMBDA_TYPE, loc(src, ctx.getStart().getLine()), params));
+		AST params = node(NonTerminalSymbol.PARAMS, loc(src, ctx.getStart().getLine()));
+		this.result(node(NonTerminalSymbol.LAMBDA_TYPE, loc(src, ctx.getStart().getLine()), params));
 	}
 	
 	@Override
@@ -503,7 +504,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitLambda_type_parameters(@NotNull LoreParser.Lambda_type_parametersContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.PARAMS);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.PARAMS);
 	}
 	
 	@Override
@@ -513,7 +514,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitList_type(@NotNull LoreParser.List_typeContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.LIST_TYPE);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.LIST_TYPE);
 	}
 	
 	@Override
@@ -523,7 +524,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitUnit_type(@NotNull LoreParser.Unit_typeContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.UNIT_TYPE);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.UNIT_TYPE);
 	}
 
 	
@@ -534,7 +535,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitRange_type(@NotNull LoreParser.Range_typeContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.RANGE_TYPE);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.RANGE_TYPE);
 	}
 	
 	@Override
@@ -578,11 +579,11 @@ public class ASTBuilder extends LoreBaseListener {
 		List<AST> cs = this.getChildrenList();
 		AST name = cs.get(0);
 		AST block = cs.get(cs.size()-1);
-		AST paramsNode = node(NodeType.PARAMS, loc(src, ctx.getStart().getLine()));
+		AST paramsNode = node(NonTerminalSymbol.PARAMS, loc(src, ctx.getStart().getLine()));
 		if(cs.size() > 2){
 			paramsNode.getMdifiableChildren().addAll(cs.subList(1, cs.size()-1));
 		}
-		this.result(node(NodeType.RULE, loc(src, ctx.getStart().getLine()), name, paramsNode, block));
+		this.result(node(NonTerminalSymbol.RULE, loc(src, ctx.getStart().getLine()), name, paramsNode, block));
 	}
 
 	@Override
@@ -596,8 +597,8 @@ public class ASTBuilder extends LoreBaseListener {
 		AST name = cs.get(0);
 		AST type = cs.get(cs.size()-2);
 		AST block = cs.get(cs.size()-1);
-		AST returnType = node(NodeType.TYPE_SPEC, loc(src, ctx.getStart().getLine()), name, type);
-		AST paramsNode = node(NodeType.PARAMS, loc(src, ctx.getStart().getLine()));
+		AST returnType = node(NonTerminalSymbol.TYPE_SPEC, loc(src, ctx.getStart().getLine()), name, type);
+		AST paramsNode = node(NonTerminalSymbol.PARAMS, loc(src, ctx.getStart().getLine()));
 //		printContext(ctx);
 //		int ix = 0;
 //		for(AST n :cs){
@@ -608,7 +609,7 @@ public class ASTBuilder extends LoreBaseListener {
 		if(cs.size() > 3){//This function definition has parameters.
 			paramsNode.getMdifiableChildren().addAll(cs.subList(1, cs.size()-2));
 		};
-		this.result(node(NodeType.FUNCTION, loc(src, ctx.getStart().getLine()), returnType, paramsNode, block));
+		this.result(node(NonTerminalSymbol.FUNCTION, loc(src, ctx.getStart().getLine()), returnType, paramsNode, block));
 	}
 
 	@Override
@@ -622,12 +623,12 @@ public class ASTBuilder extends LoreBaseListener {
 		AST name = cs.get(0);
 		AST type = cs.get(cs.size()-2);
 		AST block = cs.get(cs.size()-1);
-		AST returnType = node(NodeType.TYPE_SPEC, loc(src, ctx.getStart().getLine()), name, type);
-		AST paramsNode = node(NodeType.PARAMS, loc(src, ctx.getStart().getLine()));
+		AST returnType = node(NonTerminalSymbol.TYPE_SPEC, loc(src, ctx.getStart().getLine()), name, type);
+		AST paramsNode = node(NonTerminalSymbol.PARAMS, loc(src, ctx.getStart().getLine()));
 		if(cs.size() > 3){//This function definition has parameters.
 			paramsNode.getMdifiableChildren().addAll(cs.subList(1, cs.size()-2));
 		}
-		this.result(node(NodeType.ACCESSOR, loc(src, ctx.getStart().getLine()), returnType, paramsNode, block));
+		this.result(node(NonTerminalSymbol.ACCESSOR, loc(src, ctx.getStart().getLine()), returnType, paramsNode, block));
 	}
 	
 	@Override
@@ -637,7 +638,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitAlter_def(@NotNull LoreParser.Alter_defContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.ALTER);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.ALTER);
 	}
 	
 	@Override public void enterBlock(@NotNull LoreParser.BlockContext ctx) {
@@ -645,7 +646,7 @@ public class ASTBuilder extends LoreBaseListener {
 	}
 
 	@Override public void exitBlock(@NotNull LoreParser.BlockContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.BODY);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.BODY);
 	}
 
 	/*
@@ -660,7 +661,7 @@ public class ASTBuilder extends LoreBaseListener {
 	
 	@Override
 	public void exitResult_statement(@NotNull LoreParser.Result_statementContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.RESULT);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.RESULT);
 	}
 	
 	@Override
@@ -670,7 +671,7 @@ public class ASTBuilder extends LoreBaseListener {
 	
 	@Override
 	public void exitVar_def(@NotNull LoreParser.Var_defContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.VAR);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.VAR);
 	}
 	
 	@Override
@@ -684,7 +685,7 @@ public class ASTBuilder extends LoreBaseListener {
 		//AST self = cs.get(0);
 		AST name = cs.get(1);
 		AST exp = cs.get(2);
-		this.result(node(NodeType.MODIFY, loc(src, ctx.getStart().getLine()), name, exp));
+		this.result(node(NonTerminalSymbol.MODIFY, loc(src, ctx.getStart().getLine()), name, exp));
 	}
 	
 	@Override
@@ -694,7 +695,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitSelf(@NotNull LoreParser.SelfContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.SELF);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.SELF);
 	}
 	
 	/*
@@ -708,7 +709,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitSelect_expr(@NotNull LoreParser.Select_exprContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.SELECT);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.SELECT);
 	}
 	
 	@Override
@@ -718,7 +719,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitCase_block(@NotNull LoreParser.Case_blockContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.CASE);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.CASE);
 	}
 
 	@Override
@@ -728,7 +729,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitAs_block(@NotNull LoreParser.As_blockContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.AS);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.AS);
 	}
 
 	@Override
@@ -738,7 +739,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitDefault_block(@NotNull LoreParser.Default_blockContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.DEFAULT);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.DEFAULT);
 	}
 
 	@Override
@@ -751,8 +752,8 @@ public class ASTBuilder extends LoreBaseListener {
 		String opStr = ctx.getChild(1).getText();
 //		printContext(ctx);
 //		System.err.println("AST children list size: "+this.getChildrenList().size());
-		final NodeType[] ops = {NodeType.RANGE_OP_EE, NodeType.RANGE_OP_LE, NodeType.RANGE_OP_EL, NodeType.RANGE_OP_LL };
-		NodeType op = selectNonterminalSymbol(ctx, opStr, ops);
+		final NonTerminalSymbol[] ops = {NonTerminalSymbol.RANGE_OP_EE, NonTerminalSymbol.RANGE_OP_LE, NonTerminalSymbol.RANGE_OP_EL, NonTerminalSymbol.RANGE_OP_LL };
+		NonTerminalSymbol op = selectNonterminalSymbol(ctx, opStr, ops);
 		this.nonterminalNodeAsResult(ctx, op);
 	}
 
@@ -767,7 +768,7 @@ public class ASTBuilder extends LoreBaseListener {
 			this.result(this.getChildrenList().get(0));
 		}else{
 			String opStr = ctx.getChild(1).getText();
-			final NodeType[] ops = {NodeType.AND, NodeType.OR };
+			final NonTerminalSymbol[] ops = {NonTerminalSymbol.AND, NonTerminalSymbol.OR };
 			this.nonterminalNodeAsResult(ctx, selectNonterminalSymbol(ctx, opStr, ops));
 		}
 	}
@@ -780,7 +781,7 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitRelation(@NotNull LoreParser.RelationContext ctx) {
 		String opStr = ctx.getChild(1).getText();
-		final NodeType[] ops = {NodeType.EQ, NodeType.NEQ, NodeType.GE, NodeType.GT, NodeType.LE, NodeType.LT};
+		final NonTerminalSymbol[] ops = {NonTerminalSymbol.EQ, NonTerminalSymbol.NEQ, NonTerminalSymbol.GE, NonTerminalSymbol.GT, NonTerminalSymbol.LE, NonTerminalSymbol.LT};
 		this.nonterminalNodeAsResult(ctx, selectNonterminalSymbol(ctx, opStr, ops));
 	}
 	
@@ -791,7 +792,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitCond_monomial(@NotNull LoreParser.Cond_monomialContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.NOT);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.NOT);
 	}
 
 	
@@ -801,7 +802,7 @@ public class ASTBuilder extends LoreBaseListener {
 	
 	@Override public void exitTerms(@NotNull LoreParser.TermsContext ctx) {
 //		printContext(ctx);
-		final NodeType[] ops = {NodeType.PLUS, NodeType.MINUS};
+		final NonTerminalSymbol[] ops = {NonTerminalSymbol.PLUS, NonTerminalSymbol.MINUS};
 		this.result(buildOperatorTree(ctx, ops));
 	}
 
@@ -812,7 +813,7 @@ public class ASTBuilder extends LoreBaseListener {
 	
 	@Override public void exitTerm(@NotNull LoreParser.TermContext ctx) {
 //		printContext(ctx);
-		final NodeType[] ops = {NodeType.MULT, NodeType.DIV, NodeType.MOD};
+		final NonTerminalSymbol[] ops = {NonTerminalSymbol.MULT, NonTerminalSymbol.DIV, NonTerminalSymbol.MOD};
 		this.result(buildOperatorTree(ctx, ops));
 	}
 	
@@ -826,7 +827,7 @@ public class ASTBuilder extends LoreBaseListener {
 		if(ctx.getChildCount() < 2){
 			this.result(this.getChildrenList().get(0));
 		}else{
-			this.nonterminalNodeAsResult(ctx, NodeType.NEGATE);
+			this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.NEGATE);
 		}
 	}
 
@@ -837,7 +838,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitUnit_monomial(@NotNull LoreParser.Unit_monomialContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.UNIT_VAL);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.UNIT_VAL);
 	}
 	
 	@Override
@@ -850,7 +851,7 @@ public class ASTBuilder extends LoreBaseListener {
 	public void exitDice_monomial(@NotNull LoreParser.Dice_monomialContext ctx) {
 		if(this.getChildrenCount() < 2){
 			AST dice = this.getChildrenList().get(0);
-			dice.getMdifiableChildren().add(0, lit(1, loc(src, ctx.getStart().getLine())));
+			dice.getMdifiableChildren().add(0, lit(1L, loc(src, ctx.getStart().getLine())));
 			this.result(dice);
 		}else{
 			AST dice = this.getChildrenList().get(1);
@@ -877,10 +878,10 @@ public class ASTBuilder extends LoreBaseListener {
 //			System.err.print("i: ["+i+"], ");
 //			System.err.print("left: \""+left.symbol.getSymbolString()+"\", ");
 //			System.err.println("right: \""+right.symbol.getSymbolString()+"\"");
-			if(NodeType.CALL.equals(right.symbol)){
+			if(NonTerminalSymbol.CALL.equals(right.symbol)){
 				AST mname = right.getChildren().get(0);
 				right.getMdifiableChildren().remove(0);
-				AST qname = node(NodeType.QNAME, mname.locator, left, mname);
+				AST qname = node(NonTerminalSymbol.QNAME, mname.locator, left, mname);
 //				System.err.println("**** QNAME");
 //				PrintVisitor.printTree(qname, System.err, false);
 //				System.err.println("****");
@@ -891,7 +892,7 @@ public class ASTBuilder extends LoreBaseListener {
 //				PrintVisitor.printTree(left, System.err, false);
 //				System.err.println("****");
 			}else{
-				left = node(NodeType.QNAME, right.locator, left, right);
+				left = node(NonTerminalSymbol.QNAME, right.locator, left, right);
 //				System.err.println("**** QNAME");
 //				PrintVisitor.printTree(left, System.err, false);
 //				System.err.println("****");
@@ -912,7 +913,7 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitMember_access(@NotNull LoreParser.Member_accessContext ctx) {
 		if(this.getChildrenCount()>1){
-			AST call = node(NodeType.CALL, loc(src, ctx.getStart().getLine()));
+			AST call = node(NonTerminalSymbol.CALL, loc(src, ctx.getStart().getLine()));
 			call.getMdifiableChildren().addAll(this.getChildrenList());
 			this.result(call);
 		}else{
@@ -926,7 +927,7 @@ public class ASTBuilder extends LoreBaseListener {
 	}
 
 	@Override public void exitSimpleCall(@NotNull LoreParser.SimpleCallContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.CALL);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.CALL);
 	}
 
 	@Override
@@ -936,7 +937,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitList_construct(@NotNull LoreParser.List_constructContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.LIST_VAL);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.LIST_VAL);
 	}
 
 	
@@ -948,7 +949,7 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitForm_construct(@NotNull LoreParser.Form_constructContext ctx) {
 		//printContext(ctx);
-		this.nonterminalNodeAsResult(ctx, NodeType.FORM_VAL);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.FORM_VAL);
 	}
 	
 	@Override
@@ -958,7 +959,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitForm_contents(@NotNull LoreParser.Form_contentsContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.CONT);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.CONT);
 	}
 	
 	@Override
@@ -972,7 +973,7 @@ public class ASTBuilder extends LoreBaseListener {
 		AST type = cs.get(1);
 		AST params = cs.get(0);
 		AST block = cs.get(2);
-		this.result(node(NodeType.LAMBDA, loc(src, ctx.getStart().getLine()), type, params, block));
+		this.result(node(NonTerminalSymbol.LAMBDA, loc(src, ctx.getStart().getLine()), type, params, block));
 	}
 	
 	@Override
@@ -984,9 +985,9 @@ public class ASTBuilder extends LoreBaseListener {
 	public void exitLambda_no_param(@NotNull LoreParser.Lambda_no_paramContext ctx) {
 		List<AST> cs = this.getChildrenList();
 		AST type = cs.get(0);
-		AST params = node(NodeType.PARAMS, loc(src, ctx.getStart().getLine()));
+		AST params = node(NonTerminalSymbol.PARAMS, loc(src, ctx.getStart().getLine()));
 		AST block = cs.get(1);
-		this.result(node(NodeType.LAMBDA, loc(src, ctx.getStart().getLine()), type, params, block));
+		this.result(node(NonTerminalSymbol.LAMBDA, loc(src, ctx.getStart().getLine()), type, params, block));
 	}
 
 	@Override
@@ -996,7 +997,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitLambda_no_return(@NotNull LoreParser.Lambda_no_returnContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.LAMBDA);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.LAMBDA);
 	}
 	
 	@Override
@@ -1007,9 +1008,9 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitLambda_no_param_no_return(@NotNull LoreParser.Lambda_no_param_no_returnContext ctx) {
 		List<AST> cs = this.getChildrenList();
-		AST params = node(NodeType.PARAMS, loc(src, ctx.getStart().getLine()));
+		AST params = node(NonTerminalSymbol.PARAMS, loc(src, ctx.getStart().getLine()));
 		AST block = cs.get(0);
-		this.result(node(NodeType.LAMBDA, loc(src, ctx.getStart().getLine()), params, block));
+		this.result(node(NonTerminalSymbol.LAMBDA, loc(src, ctx.getStart().getLine()), params, block));
 	}
 	
 	@Override
@@ -1019,7 +1020,7 @@ public class ASTBuilder extends LoreBaseListener {
 
 	@Override
 	public void exitLambda_parameters(@NotNull LoreParser.Lambda_parametersContext ctx) {
-		this.nonterminalNodeAsResult(ctx, NodeType.PARAMS);
+		this.nonterminalNodeAsResult(ctx, NonTerminalSymbol.PARAMS);
 	}
 	
 	@Override
@@ -1030,12 +1031,12 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitLambda_block(@NotNull LoreParser.Lambda_blockContext ctx) {
 		List<AST> cs = this.getChildrenList();
-		if(NodeType.BODY.equals(cs.get(0).symbol)){// child is BODY node.
+		if(NonTerminalSymbol.BODY.equals(cs.get(0).symbol)){// child is BODY node.
 			this.result(cs.get(0));
 		}else{// child is expression node.
 			AST exp = cs.get(0);
-			AST result = node(NodeType.RESULT, loc(src, ctx.getStart().getLine()), exp);
-			AST body = node(NodeType.BODY, loc(src, ctx.getStart().getLine()), result);
+			AST result = node(NonTerminalSymbol.RESULT, loc(src, ctx.getStart().getLine()), exp);
+			AST body = node(NonTerminalSymbol.BODY, loc(src, ctx.getStart().getLine()), result);
 			this.result(body);
 		}
 	}
@@ -1052,9 +1053,9 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitHtml(@NotNull LoreParser.HtmlContext ctx) {
 		Object v = ((Literal<?>)this.getChildrenList().get(0)).value;
-		String content = (String)v;
+		String content = ((SimpleString)v).getContent();
 		HTML html = HTML.create(content, loc(src, ctx.start.getLine()), logger);
-		AST n = lit(html, loc(src, ctx.start.getLine()));
+		Literal<HTML> n = lit(html, loc(src, ctx.start.getLine()));
 		this.result(n);
 	}
 
@@ -1066,7 +1067,7 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitXml(@NotNull LoreParser.XmlContext ctx) {
 		Object v = ((Literal<?>)this.getChildrenList().get(0)).value;
-		String content = (String)v;
+		String content = ((SimpleString)v).getContent();
 		XML xml = XML.create(content, loc(src, ctx.start.getLine()), logger);
 		AST n = lit(xml, loc(src, ctx.start.getLine()));
 		this.result(n);
@@ -1082,7 +1083,7 @@ public class ASTBuilder extends LoreBaseListener {
 		Object v = ((Literal<?>)this.getChildrenList().get(0)).value;
 		URL url = null;
 		try{
-			url = Lore.getURL((String)v, src);
+			url = Lore.getURL(((SimpleString)v).getContent(), src);
 		}catch(IllegalArgumentException e){
 			error(ctx, e.getMessage());
 			url = Locator.NOWHERE.file;
@@ -1099,7 +1100,7 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitDate(@NotNull LoreParser.DateContext ctx) {
 		Object v = ((Literal<?>)this.getChildrenList().get(0)).value;
-		String content = (String)v;
+		String content = ((SimpleString)v).getContent();
 		OffsetDateTime date = null;
 		try{
 			date = OffsetDateTime.parse(content);
@@ -1119,7 +1120,7 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitJid(@NotNull LoreParser.JidContext ctx) {
 		Object v = ((Literal<?>)this.getChildrenList().get(0)).value;
-		String content = (String)v;
+		String content = ((SimpleString)v).getContent();
 		JID jid = JID.NOBODY;
 		try{
 		jid = new JID(content);
@@ -1138,7 +1139,7 @@ public class ASTBuilder extends LoreBaseListener {
 	@Override
 	public void exitLoc(@NotNull LoreParser.LocContext ctx) {
 		Object v = ((Literal<?>)this.getChildrenList().get(0)).value;
-		String content = (String)v;
+		String content = ((SimpleString)v).getContent();
 		Location loc = Location.NOWHERE;
 		try{
 			loc = Location.parse(content);
@@ -1179,7 +1180,8 @@ public class ASTBuilder extends LoreBaseListener {
 		}
 
 		String str = trim(text, begin, end);
-		AST n = lit(str, loc(src, ctx.start.getLine()));
+		SimpleString simple = new SimpleString(str, loc(src, ctx.start.getLine()), logger);
+		AST n = lit(simple, loc(src, ctx.start.getLine()));
 		this.result(n);
 	}
 	
@@ -1204,7 +1206,8 @@ public class ASTBuilder extends LoreBaseListener {
 			end = begin;
 		}
 		String str = trim(text, begin, end);
-		AST n = lit(str, loc(src, ctx.start.getLine()));
+		SimpleString simple = new SimpleString(str, loc(src, ctx.start.getLine()), logger);
+		AST n = lit(simple, loc(src, ctx.start.getLine()));
 		this.result(n);
 	}
 
@@ -1220,29 +1223,23 @@ public class ASTBuilder extends LoreBaseListener {
 		ParseTree child0 = ctx.getChild(0);
 		String text = child0.getText();
 		try{
-			int i = 0;
-			i = parseIntegral(text);
-			this.result(lit(i, loc(src, ctx.start.getLine())));
-		} catch(NumberFormatException e1){
-			try{
-				long l = parseLongIntegral(text);
-				this.result(lit(l, loc(src, ctx.start.getLine())));
-			} catch(NumberFormatException e2){
-				error(ctx, e2.getMessage());
-				this.result(lit(0, loc(src, ctx.start.getLine())));
-			}
+			long l = parseLongIntegral(text);
+			this.result(lit(l, loc(src, ctx.start.getLine())));
+		} catch(NumberFormatException e2){
+			error(ctx, e2.getMessage());
+			this.result(lit(0L, loc(src, ctx.start.getLine())));
 		}
 	}
 
-	private int parseIntegral(String text) throws NumberFormatException {
-		int i = 0;
-		if(text.startsWith("0x") || text.startsWith("0X")){
-			i = Integer.parseInt(text.substring(2), 16);
-		}else{
-			i = Integer.parseInt(text, 10);
-		}
-		return i;
-	}
+//	private int parseIntegral(String text) throws NumberFormatException {
+//		int i = 0;
+//		if(text.startsWith("0x") || text.startsWith("0X")){
+//			i = Integer.parseInt(text.substring(2), 16);
+//		}else{
+//			i = Integer.parseInt(text, 10);
+//		}
+//		return i;
+//	}
 	
 	private long parseLongIntegral(String text) throws NumberFormatException {
 		long i = 0;
@@ -1289,17 +1286,17 @@ public class ASTBuilder extends LoreBaseListener {
 //		System.err.println("** Dice kind");
 //		printContext(ctx);
 		String text = ctx.getChild(0).getText();
-		int k = 6;
+		long k = 6;
 		if(text.length() > 1){
-			k = Integer.MAX_VALUE;
+			k = Long.MAX_VALUE;
 			try{
-				k = Integer.parseInt(text.substring(1));
+				k = Long.parseLong(text.substring(1));
 			}catch(NumberFormatException e){
 				this.error(ctx, "Dice kind is invalid.("+e.getMessage()+")");
 			}
 		}
-		Literal<Integer> kind = lit(k, loc(src, ctx.start.getLine()));
-		this.result(node(NodeType.DICE, loc(src, ctx.start.getLine()), kind));
+		Literal<Long> kind = lit(k, loc(src, ctx.start.getLine()));
+		this.result(node(NonTerminalSymbol.DICE, loc(src, ctx.start.getLine()), kind));
 	}
 
 	@Override

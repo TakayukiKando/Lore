@@ -16,6 +16,12 @@
  */
 package org.xgmtk.lore.symbols;
 
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.xgmtk.lore.symbols.builtin.BuiltinTypes;
+
+
 
 /**
  * TODO write JavaDoc comment.
@@ -30,38 +36,65 @@ public class GlobalScope extends Section {
 	 * TODO write JavaDoc comment.
 	 */
 	public static final String ROOT_SCOPE_NAME = "$root";
-	
-	/**
-	 * TODO write JavaDoc comment.
-	 * 
-	 * @param symbols
-	 * @return
-	 * @throws AlreadyDefinedException
-	 */
-	public static GlobalScope globalScope(Symbol...symbols) throws AlreadyDefinedException {
-		GlobalScope baseScope = new GlobalScope();
-		baseScope.defineAll(symbols);
-		return baseScope;
+	public static final String ANONYMOUS_TYPES = "$AnonymousTypes";
+
+	public static String createAnonymousTypeName(int n) {
+		return "AnonType"+Integer.toHexString(n);
 	}
+
+	
+	private final AtomicInteger anonymousTypeCounter;
 
 	/**
 	 * TODO write JavaDoc comment.
 	 */
 	public GlobalScope(){
-		super(ROOT_SCOPE_NAME, false);
+		super(ROOT_SCOPE_NAME, Access.PUBLIC);
+		this.anonymousTypeCounter = new AtomicInteger(0);
 		try{
-			this.defineAll(PrimitiveTypeSymbol.values());
-			this.defineAll(TypeConstructorSymbol.values());
-		}catch (AlreadyDefinedException e){
+			BuiltinTypes.defineAll(this);
+			this.define(new Section(ANONYMOUS_TYPES));
+			//this.defineAll(ParametricType.Constructor.values());
+		}catch (AlreadyDefinedSymbolException e){
 			throw new IllegalStateException("Unexpected internal error.", e);
 		}
 	}
-	
-	void enter(ScopeTreeVisitor astVisitor) {
-		astVisitor.enter(this);
+
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @return
+	 */
+	public String createAnonymousTypeName() {
+		return GlobalScope.createAnonymousTypeName(this.anonymousTypeCounter.getAndIncrement());
 	}
 
-	void exit(ScopeTreeVisitor astVisitor) {
-		astVisitor.exit(this);
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @param definition
+	 * @throws AlreadyDefinedSymbolException
+	 */
+	public void addAnonymousType(FormDef definition) throws AlreadyDefinedSymbolException{
+		Section anons = getAnonymousTypesSection();
+		anons.define(definition);
+	}
+
+	/**
+	 * TODO write JavaDoc comment.
+	 * 
+	 * @return
+	 */
+	public Section getAnonymousTypesSection() {
+		Optional<Symbol> oSym = this.resolve(ANONYMOUS_TYPES);
+		if(!oSym.isPresent()){
+			throw new IllegalStateException("Unexpected internal error: "+ANONYMOUS_TYPES+" section is not defined.");
+		}
+		Symbol symAnons = oSym.get();
+		if(!(symAnons instanceof Section)){
+			throw new IllegalStateException("Unexpected internal error: "+ANONYMOUS_TYPES+" symbol is not a Section.");
+		}
+		Section anons = (Section)symAnons;
+		return anons;
 	}
 }

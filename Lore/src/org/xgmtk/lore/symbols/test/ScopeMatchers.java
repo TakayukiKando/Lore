@@ -16,6 +16,8 @@
  */
 package org.xgmtk.lore.symbols.test;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -24,7 +26,6 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.xgmtk.lore.symbols.Scope;
-import org.xgmtk.lore.symbols.Scope.ScopeIterator;
 import org.xgmtk.lore.symbols.Symbol;
 
 /**
@@ -87,34 +88,10 @@ public class ScopeMatchers {
 				this.failureMessage = "Actual is not Scope.";
 				return false;
 			}
-			Scope target = (Scope)actual;
-			
-			ScopeIterator eit = expected.iterator();
-			ScopeIterator ait = target.iterator();
-			
-			return testEquality(eit, ait);
+			return testEqualityScope(expected, (Scope)actual);
 		}
 
-		private boolean testEquality(ScopeIterator eit, ScopeIterator ait) {
-			while(eit.hasNext()){
-				Scope e = eit.next();
-				if(!ait.hasNext()){
-					this.failureMessage = "expected node \""+e.toString()+"\" is not found.";
-					return false;
-				}
-				Scope a = ait.next();
-				if(!testEqualityNode(e, a)){
-					this.failureMessage = "expected node "+e.toString()+" and actual node \""+a.toString()+"\" is not equal.(" + this.failureMessage+")";
-					return false;
-				}
-			}if(ait.hasNext()){
-				this.failureMessage = "actual node \""+ait.next().toString()+"\" is extraneous";
-				return false;
-			}
-			return true;
-		}
-
-		private boolean testEqualityNode(Scope expected, Scope actual) {
+		private boolean testEqualityScope(Scope expected, Scope actual) {
 			if(expected == actual){
 				return true;
 			}
@@ -145,8 +122,25 @@ public class ScopeMatchers {
 			}
 			Map<String, Symbol> aTab = actual.getSymbolTable();
 			for(Entry<String, Symbol> eEnt : expected.getSymbolTable().entrySet()){
-				if(!testEqualitySymbol(eEnt.getValue(), aTab.get(eEnt.getKey()))){
+				Symbol symE = eEnt.getValue();
+				Symbol symA = aTab.get(eEnt.getKey());
+				if(!testEqualitySymbol(symE, symA)){
 					this.failureMessage = this.failureMessage+"(for expected \""+eEnt.getKey()+"\")";
+					return false;
+				}
+			}
+			List<Scope> asubs = actual.getSubScopes();
+			List<Scope> esubs = expected.getSubScopes();
+			if(asubs.size() != esubs.size()){
+				this.failureMessage = "Size of tables[expected: "+esubs.size()+", actual: "+asubs.size()+"] are not match.";
+				return false;
+			}
+			Iterator<Scope> ait = asubs.iterator();
+			Iterator<Scope> eit = esubs.iterator();
+			while(eit.hasNext()){
+				Scope asub = ait.next();
+				Scope esub = eit.next();
+				if(!testEquality(esub, asub)){
 					return false;
 				}
 			}
@@ -158,25 +152,25 @@ public class ScopeMatchers {
 				return true;
 			}
 			if(symE == null && symA != null){
-				this.failureMessage = "Expectd is null, but actual is not null.";
+				this.failureMessage = "Expectd is null, but actual("+symA.getDescription()+") is not null.";
 				return false;
 			}
 			if(symA == null && symE != null){
-				this.failureMessage = "Expectd is not null, but actual is null.";
+				this.failureMessage = "Expectd("+symE.getDescription()+") is not null, but actual is null.";
 				return false;
 			}
 			Class<? extends Symbol> classE = symE.getClass();
 			Class<? extends Symbol> classA = symA.getClass();
 			if(!Objects.equals(classE, classA)){
-				this.failureMessage = "Classes of symbols[expected: \""+classE.getName()+"\", actual: \""+classA.getName()+"\"] are not match.";
+				this.failureMessage = "Classes of symbols are not match.[expected: "+symE.getDescription()+", actual: "+symA.getDescription()+"]";
 				return false;
 			}
 			if(!Objects.equals(symE.getName(), symA.getName())){
-				this.failureMessage = "Symbol name[expected: \""+symE.getName()+"\", actual: \""+symA.getName()+"\"] are not match.";
+				this.failureMessage = "Symbol name are not match.[expected: "+symE.getDescription()+", actual: "+symA.getDescription()+"]";
 				return false;
 			}
-			if(symE.isPrivate() != symA.isPrivate()){
-				this.failureMessage = "Symbol privacy[expected: \""+symE.isPrivate()+"\"(\""+symE.getName()+"\"), actual: \""+symA.isPrivate()+"\"(\""+symA.getName()+"\")] are not match.";
+			if(!symE.getAccess().equals(symA.getAccess())){
+				this.failureMessage = "Symbol access property are not match.[expected: "+symE.getDescription()+", actual: "+symA.getDescription()+"]";
 				return false;
 			}
 			return true;
