@@ -267,6 +267,7 @@ public abstract class Scope {
 			scope.dump(out, depth+1);
 		}
 		out.println(indent+"}");
+		out.flush();
 	}
 
 	/**

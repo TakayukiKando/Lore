@@ -80,6 +80,7 @@ public class ScopeBuilder extends Loader{
 		}
 		Scope scope = builder.getScopeRoot();
 		scope.dump(System.out);
+		System.out.flush();
 		System.exit(0);
 	}
 
